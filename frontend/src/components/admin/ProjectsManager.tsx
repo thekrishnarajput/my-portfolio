@@ -104,10 +104,19 @@ const ProjectsManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Remove empty strings from optional URL fields
+      const submitData = {
+        ...formData,
+        githubUrl: formData.githubUrl?.trim() || undefined,
+        liveUrl: formData.liveUrl?.trim() || undefined,
+        imageUrl: formData.imageUrl?.trim() || undefined,
+        longDescription: formData.longDescription?.trim() || undefined,
+      };
+
       if (editingProject) {
-        await projectsAPI.update(editingProject._id, formData);
+        await projectsAPI.update(editingProject._id, submitData);
       } else {
-        await projectsAPI.create(formData);
+        await projectsAPI.create(submitData);
       }
       await fetchProjects();
       handleCloseModal();

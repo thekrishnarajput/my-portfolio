@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import * as THREE from 'three';
 import { useInView } from 'react-intersection-observer';
+import Typewriter from '../Typewriter';
 
 // Floating particles
 function Particles() {
@@ -81,7 +82,11 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <span className="bg-gradient-to-r from-primary-600 to-primary-800 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
-              Mukesh Karn
+              <Typewriter 
+                text="Mukesh Karn" 
+                speed={100}
+                showCursor={true}
+              />
             </span>
           </motion.h1>
           <motion.p
