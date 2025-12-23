@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { messages } from './message';
 
 interface EmailOptions {
   to: string;
@@ -29,9 +30,9 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully');
+    console.log(messages.emailSentSuccessfully());
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error(messages.emailSendingFailed(), error);
     throw error;
   }
 };

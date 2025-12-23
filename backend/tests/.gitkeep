@@ -1,0 +1,7 @@
+# Tests directory
+# Add test files here following the structure:
+# tests/
+#   services/
+#   controllers/
+#   repositories/
+

@@ -14,10 +14,36 @@ A full-stack portfolio website showcasing professional expertise with modern des
 
 ```
 Portfolio/
-├── frontend/          # React frontend application
-├── backend/           # Express.js backend server
-├── docker-compose.yml # Docker configuration
-└── README.md
+├── backend/
+│   ├── src/
+│   │   ├── models/          # MongoDB schemas
+│   │   ├── routes/          # API routes
+│   │   ├── middleware/      # Auth, validation
+│   │   ├── utils/           # Email utilities
+│   │   ├── scripts/         # Admin initialization
+│   │   └── server.ts        # Express server
+│   ├── Dockerfile
+│   ├── package.json
+│   └── README.md
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   │   ├── sections/   # Page sections
+│   │   │   └── admin/      # Admin components
+│   │   ├── contexts/        # React contexts
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API services
+│   │   └── App.tsx
+│   ├── public/             # Static assets
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── package.json
+│   └── README.md
+├── docker-compose.yml
+├── README.md
+├── SETUP.md
+├── DEPLOYMENT.md
+└── API.md
 ```
 
 ## 🛠️ Getting Started

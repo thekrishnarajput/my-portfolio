@@ -39,16 +39,16 @@ export const projectsAPI = {
   getAll: () => api.get('/projects'),
   getById: (id: string) => api.get(`/projects/${id}`),
   create: (data: any) => api.post('/projects', data),
-  update: (id: string, data: any) => api.put(`/projects/${id}`, data),
-  delete: (id: string) => api.delete(`/projects/${id}`),
+  update: (id: string, data: any) => api.post(`/projects/${id}/update`, data),
+  delete: (id: string) => api.post(`/projects/${id}/delete`),
 };
 
 export const skillsAPI = {
   getAll: () => api.get('/skills'),
   getById: (id: string) => api.get(`/skills/${id}`),
   create: (data: any) => api.post('/skills', data),
-  update: (id: string, data: any) => api.put(`/skills/${id}`, data),
-  delete: (id: string) => api.delete(`/skills/${id}`),
+  update: (id: string, data: any) => api.post(`/skills/${id}/update`, data),
+  delete: (id: string) => api.post(`/skills/${id}/delete`),
 };
 
 export const contactAPI = {

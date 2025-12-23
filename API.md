@@ -58,10 +58,23 @@ Create project (admin only)
 }
 ```
 
-#### PUT /projects/:id
+#### POST /projects/:id/update
 Update project (admin only)
 
-#### DELETE /projects/:id
+**Body:**
+```json
+{
+  "title": "Updated Project Name",
+  "description": "Updated description",
+  "techStack": ["React", "Node.js", "TypeScript"],
+  "githubUrl": "https://github.com/...",
+  "liveUrl": "https://example.com",
+  "featured": true,
+  "order": 1
+}
+```
+
+#### POST /projects/:id/delete
 Delete project (admin only)
 
 ### Skills
@@ -101,10 +114,20 @@ Create skill (admin only)
 }
 ```
 
-#### PUT /skills/:id
+#### POST /skills/:id/update
 Update skill (admin only)
 
-#### DELETE /skills/:id
+**Body:**
+```json
+{
+  "name": "Updated Skill",
+  "category": "frontend",
+  "proficiency": 95,
+  "order": 1
+}
+```
+
+#### POST /skills/:id/delete
 Delete skill (admin only)
 
 ### Contact

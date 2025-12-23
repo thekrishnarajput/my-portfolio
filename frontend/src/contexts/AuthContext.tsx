@@ -32,7 +32,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyToken = async () => {
     try {
       const response = await authAPI.verify(token!);
-      setUser(response.data.user);
+      // API response structure: { success: true, data: { user }, message }
+      setUser(response.data.data.user);
     } catch (error) {
       logout();
     }
@@ -40,9 +41,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     const response = await authAPI.login(email, password);
-    setToken(response.data.token);
-    setUser(response.data.user);
-    localStorage.setItem('token', response.data.token);
+    // API response structure: { success: true, data: { token, user }, message }
+    const token = response.data.data.token;
+    const user = response.data.data.user;
+    setToken(token);
+    setUser(user);
+    localStorage.setItem('token', token);
   };
 
   const logout = () => {

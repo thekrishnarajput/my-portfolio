@@ -46,11 +46,11 @@ npm run dev
 ### Protected Endpoints (Admin Only)
 
 - `POST /api/projects` - Create project
-- `PUT /api/projects/:id` - Update project
-- `DELETE /api/projects/:id` - Delete project
+- `POST /api/projects/:id/update` - Update project
+- `POST /api/projects/:id/delete` - Delete project
 - `POST /api/skills` - Create skill
-- `PUT /api/skills/:id` - Update skill
-- `DELETE /api/skills/:id` - Delete skill
+- `POST /api/skills/:id/update` - Update skill
+- `POST /api/skills/:id/delete` - Delete skill
 
 ### Authentication
 
