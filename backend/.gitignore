@@ -2,3 +2,7 @@
 .env
 dist
 logs
+
+# Documentation
+!README.md
+*.md

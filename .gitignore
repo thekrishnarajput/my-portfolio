@@ -12,3 +12,6 @@
 
 pkg/
 src/
+# Documentation
+!README.md
+*.md

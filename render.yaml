@@ -1,0 +1,46 @@
+services:
+  # Backend API Service
+  - type: web
+    name: portfolio-backend
+    env: node
+    plan: starter # Change to 'standard' or 'pro' for production
+    region: oregon # Change to your preferred region
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm run start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false # Set this in Render dashboard
+      - key: JWT_SECRET
+        sync: false # Set this in Render dashboard
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false # Will be set after frontend deployment
+      - key: EMAIL_HOST
+        sync: false # Optional - set if using email
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USER
+        sync: false # Optional - set if using email
+      - key: EMAIL_PASS
+        sync: false # Optional - set if using email
+      - key: EMAIL_FROM
+        sync: false # Optional - set if using email
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+
+  # Frontend Static Site
+  - type: static
+    name: portfolio-frontend
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false # Will be set to backend URL after deployment
+

@@ -36,7 +36,6 @@ Portfolio/
 │   │   └── App.tsx
 │   ├── public/             # Static assets
 │   ├── Dockerfile
-│   ├── nginx.conf
 │   ├── package.json
 │   └── README.md
 ├── docker-compose.yml

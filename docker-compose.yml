@@ -8,13 +8,19 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: portfolio
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-portfolio}
     volumes:
       - mongodb_data:/data/db
     networks:
       - portfolio-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   backend:
     build:
@@ -23,36 +29,54 @@ services:
     container_name: portfolio-backend
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "${BACKEND_PORT:-5000}:5000"
     environment:
       NODE_ENV: production
       PORT: 5000
-      MONGODB_URI: mongodb://admin:password@mongodb:27017/portfolio?authSource=admin
-      JWT_SECRET: ${JWT_SECRET:-change-this-secret}
-      JWT_EXPIRE: 7d
+      MONGODB_URI: mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password}@mongodb:27017/${MONGO_DATABASE:-portfolio}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
+      JWT_EXPIRE: ${JWT_EXPIRE:-7d}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-}
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-}
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - portfolio-network
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api}
     container_name: portfolio-frontend
     restart: unless-stopped
     ports:
-      - "3000:3000"
-    environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api}
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - portfolio-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 networks:
   portfolio-network:
@@ -60,4 +84,5 @@ networks:
 
 volumes:
   mongodb_data:
+    driver: local
 

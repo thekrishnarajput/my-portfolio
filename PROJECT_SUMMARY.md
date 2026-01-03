@@ -131,7 +131,6 @@ Portfolio/
 │   │   └── App.tsx
 │   ├── public/             # Static assets
 │   ├── Dockerfile
-│   ├── nginx.conf
 │   ├── package.json
 │   └── README.md
 ├── docker-compose.yml
@@ -146,7 +145,7 @@ Portfolio/
 - Code splitting with Vite
 - Lazy loading for components
 - Image optimization ready
-- Gzip compression (nginx)
+- Gzip compression (via serve or hosting platform)
 - Static asset caching
 - React.memo for expensive components
 - Optimized bundle sizes
@@ -187,7 +186,7 @@ Portfolio/
 - Docker Compose setup
 - Environment variable templates
 - Production build scripts
-- Nginx configuration
+- Static file serving (via serve package for Docker)
 - Deployment guides for:
   - Vercel
   - Netlify

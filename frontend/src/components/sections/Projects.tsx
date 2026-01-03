@@ -92,9 +92,6 @@ const Projects = () => {
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               No projects available. Check back soon!
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
-              Projects can be added through the admin panel.
-            </p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
