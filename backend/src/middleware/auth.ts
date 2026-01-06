@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthRequest } from '../types';
-import { UnauthorizedError, ForbiddenError } from '../errors/AppError';
+import { UnauthorizedError, ForbiddenError } from '../errors/appError';
 import { messages } from '../utils/message';
 import env from '../config/env';
 

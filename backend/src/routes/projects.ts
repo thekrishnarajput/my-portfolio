@@ -1,5 +1,5 @@
 import express from 'express';
-import { ProjectController } from '../controllers/ProjectController';
+import { ProjectController } from '../controllers/projectController';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import {
   createProjectValidation,

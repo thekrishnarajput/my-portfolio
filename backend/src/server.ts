@@ -24,7 +24,7 @@ import authRoutes from './routes/auth';
 import linkedinRoutes from './routes/linkedin';
 
 // Import controllers
-import { HealthController } from './controllers/HealthController';
+import { HealthController } from './controllers/healthController';
 import initAdmin from './scripts/initAdmin';
 
 const app: Application = express();

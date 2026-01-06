@@ -1,5 +1,5 @@
 import express from 'express';
-import { LinkedInController } from '../controllers/LinkedInController';
+import { LinkedInController } from '../controllers/linkedInController';
 
 const router = express.Router();
 const linkedInController = new LinkedInController();

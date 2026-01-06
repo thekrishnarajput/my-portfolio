@@ -1,5 +1,5 @@
 import express from 'express';
-import { SkillController } from '../controllers/SkillController';
+import { SkillController } from '../controllers/skillController';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import {
   createSkillValidation,

@@ -1,5 +1,5 @@
 import express from 'express';
-import { ContactController } from '../controllers/ContactController';
+import { ContactController } from '../controllers/contactController';
 import { contactValidation } from '../utils/validator';
 
 const router = express.Router();
