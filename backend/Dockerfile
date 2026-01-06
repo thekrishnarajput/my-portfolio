@@ -15,16 +15,13 @@ RUN npm run build
 
 ENV NODE_ENV=production
 
-# Create non-root user for security
+# Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Expose port
-EXPOSE 5000
+USER nodejs
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+EXPOSE 10000
 
 # Start server (use production start script)
 CMD ["npm", "run", "start:prod"]
