@@ -1,5 +1,5 @@
 import { ProjectRepository } from '../repositories/projectRepository';
-import { IProject } from '../models/Project';
+import { IProject } from '../models/project';
 
 export class ProjectService {
     private projectRepository: ProjectRepository;

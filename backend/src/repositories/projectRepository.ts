@@ -1,4 +1,4 @@
-import Project, { IProject } from '../models/Project';
+import Project, { IProject } from "src/models/project";
 
 export class ProjectRepository {
     async findAll(): Promise<IProject[]> {

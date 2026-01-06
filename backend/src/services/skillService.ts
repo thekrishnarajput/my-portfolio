@@ -1,5 +1,5 @@
 import { SkillRepository } from '../repositories/skillRepository';
-import { ISkill } from '../models/Skill';
+import { ISkill } from '../models/skill';
 
 export class SkillService {
     private skillRepository: SkillRepository;
