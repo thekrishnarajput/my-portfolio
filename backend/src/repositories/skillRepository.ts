@@ -1,4 +1,4 @@
-import Skill, { ISkill } from '../models/Skill';
+import Skill, { ISkill } from '../models/skill';
 
 export class SkillRepository {
     async findAll(): Promise<ISkill[]> {
