@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:7
@@ -30,20 +28,13 @@ services:
     restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-5000}:5000"
-    environment:
-      NODE_ENV: production
-      PORT: 5000
-      MONGODB_URI: mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password}@mongodb:27017/${MONGO_DATABASE:-portfolio}?authSource=admin
-      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
-      JWT_EXPIRE: ${JWT_EXPIRE:-7d}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
-      EMAIL_HOST: ${EMAIL_HOST:-}
-      EMAIL_PORT: ${EMAIL_PORT:-587}
-      EMAIL_USER: ${EMAIL_USER:-}
-      EMAIL_PASS: ${EMAIL_PASS:-}
-      EMAIL_FROM: ${EMAIL_FROM:-}
-      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-}
-      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-}
+    # Load environment variables from backend/.env
+    # All variables defined in backend/.env will be available in the container
+    env_file:
+      - ./backend/.env
+    # Optional: Override specific variables for Docker if needed
+    # environment:
+    #   MONGODB_URI: mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password}@mongodb:27017/${MONGO_DATABASE:-portfolio}?authSource=admin
     depends_on:
       mongodb:
         condition: service_healthy
@@ -60,12 +51,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api}
     container_name: portfolio-frontend
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
+    env_file:
+      - ./frontend/.env
     depends_on:
       backend:
         condition: service_healthy

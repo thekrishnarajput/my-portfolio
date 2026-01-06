@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { HiSun, HiMoon, HiMenu, HiX } from 'react-icons/hi';
@@ -10,7 +10,6 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { isAuthenticated } = useAuth();
-  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {

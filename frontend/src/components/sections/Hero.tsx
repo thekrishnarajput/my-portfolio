@@ -38,13 +38,6 @@ const Hero = () => {
     triggerOnce: true,
   });
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <section
       id="home"
@@ -82,8 +75,8 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <span className="bg-gradient-to-r from-primary-600 to-primary-800 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
-              <Typewriter 
-                text="Mukesh Karn" 
+              <Typewriter
+                text="Mukesh Karn"
                 speed={100}
                 showCursor={true}
               />
