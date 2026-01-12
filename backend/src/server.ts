@@ -22,6 +22,7 @@ import skillRoutes from './routes/skills';
 import contactRoutes from './routes/contact';
 import authRoutes from './routes/auth';
 import linkedinRoutes from './routes/linkedin';
+import visitorRoutes from './routes/visitors';
 
 // Import controllers
 import { HealthController } from './controllers/healthController';
@@ -85,6 +86,7 @@ app.use('/api/skills', skillRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/linkedin', linkedinRoutes);
+app.use('/api/visitors', visitorRoutes);
 
 // 404 handler
 app.use((_: Request, res: Response) => {

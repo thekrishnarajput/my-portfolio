@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
-import { HiSun, HiMoon, HiMenu, HiX } from 'react-icons/hi';
+import { HiMenu, HiX } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
+import DarkModeToggle from './DarkModeToggle';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { theme, toggleTheme } = useTheme();
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -64,32 +63,12 @@ const Navbar = () => {
                 Admin
               </Link>
             )}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === 'light' ? (
-                <HiMoon className="w-5 h-5" />
-              ) : (
-                <HiSun className="w-5 h-5" />
-              )}
-            </button>
+            <DarkModeToggle />
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === 'light' ? (
-                <HiMoon className="w-5 h-5" />
-              ) : (
-                <HiSun className="w-5 h-5" />
-              )}
-            </button>
+            <DarkModeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"

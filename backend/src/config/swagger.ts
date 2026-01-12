@@ -265,6 +265,10 @@ const options: swaggerJsdoc.Options = {
                 name: 'LinkedIn',
                 description: 'LinkedIn integration endpoints',
             },
+            {
+                name: 'Visitors',
+                description: 'Visitor tracking endpoints',
+            },
         ],
     },
     apis: ['./src/routes/*.ts', './src/server.ts'],

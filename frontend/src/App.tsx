@@ -5,7 +5,9 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Footer from './components/Footer';
+import VisitorCounter from './components/VisitorCounter';
 import ScrollToTop from './components/ScrollToTop';
+import RocketScrollToTop from './components/RocketScrollToTop';
 import SEO from './components/SEO';
 
 function AppContent() {
@@ -31,7 +33,9 @@ function AppContent() {
             <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
+        <VisitorCounter />
         <Footer />
+        <RocketScrollToTop />
       </div>
     </>
   );
