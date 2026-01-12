@@ -32,7 +32,7 @@ const Footer = () => {
               <FaLinkedin className="w-5 h-5" />
             </a>
             <a
-              href="mailto:dev.mukeshkarn@gmail.com"
+              href="mailto:hey@mukeshkarn.com"
               className="hover:text-primary-400 transition-colors"
               aria-label="Email"
             >

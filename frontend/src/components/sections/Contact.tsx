@@ -210,7 +210,7 @@ const Contact = () => {
                   </div>
                 </a>
                 <a
-                  href="mailto:dev.mukeshkarn@gmail.com"
+                  href="mailto:hey@mukeshkarn.com"
                   className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
                 >
                   <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-lg group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
@@ -219,7 +219,7 @@ const Contact = () => {
                   <div>
                     <p className="font-semibold text-gray-900 dark:text-white">Email</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      dev.mukeshkarn@gmail.com
+                      hey@mukeshkarn.com
                     </p>
                   </div>
                 </a>
