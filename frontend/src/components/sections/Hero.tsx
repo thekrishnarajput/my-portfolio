@@ -184,7 +184,6 @@ function DigitalGrid({ isDark }: { isDark: boolean }) {
 // 3D Code Particles
 function CodeParticles() {
   const particles = useRef<THREE.Points>(null);
-  // const meshRef = useRef<THREE.Mesh>(null);
 
   useEffect(() => {
     if (!particles.current) return;
