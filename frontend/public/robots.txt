@@ -1,5 +1,15 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://your-domain.com/sitemap.xml
+# Disallow admin panel from search engines
+Disallow: /admin
+
+# Allow all other paths
+Allow: /
+
+# Sitemap location
+Sitemap: https://mukeshkarn.com/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
 
