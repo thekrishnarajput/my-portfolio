@@ -67,5 +67,10 @@ export const linkedinAPI = {
   getFollowers: () => api.get('/linkedin/followers'),
 };
 
+export const visitorsAPI = {
+  trackVisit: () => api.post('/visitors/track'),
+  getCount: () => api.get('/visitors/count'),
+};
+
 export default api;
 
