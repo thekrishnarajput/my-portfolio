@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
@@ -184,7 +184,7 @@ function DigitalGrid({ isDark }: { isDark: boolean }) {
 // 3D Code Particles
 function CodeParticles() {
   const particles = useRef<THREE.Points>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
+  // const meshRef = useRef<THREE.Mesh>(null);
 
   useEffect(() => {
     if (!particles.current) return;
