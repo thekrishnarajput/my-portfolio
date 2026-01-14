@@ -36,13 +36,8 @@ const options: swaggerJsdoc.Options = {
                         },
                         description: {
                             type: 'string',
-                            maxLength: 500,
-                            description: 'Project description',
-                        },
-                        longDescription: {
-                            type: 'string',
                             maxLength: 2000,
-                            description: 'Detailed project description',
+                            description: 'Project description',
                         },
                         techStack: {
                             type: 'array',
@@ -75,6 +70,29 @@ const options: swaggerJsdoc.Options = {
                             type: 'number',
                             default: 0,
                             description: 'Display order',
+                        },
+                        createdAt: {
+                            type: 'string',
+                            format: 'date-time',
+                        },
+                        updatedAt: {
+                            type: 'string',
+                            format: 'date-time',
+                        },
+                    },
+                },
+                TechStack: {
+                    type: 'object',
+                    required: ['name'],
+                    properties: {
+                        _id: {
+                            type: 'string',
+                            description: 'Tech stack ID',
+                        },
+                        name: {
+                            type: 'string',
+                            maxLength: 50,
+                            description: 'Tech stack name (stored in lowercase for uniqueness)',
                         },
                         createdAt: {
                             type: 'string',
@@ -238,6 +256,47 @@ const options: swaggerJsdoc.Options = {
                         },
                     },
                 },
+                HomepageConfig: {
+                    type: 'object',
+                    properties: {
+                        _id: {
+                            type: 'string',
+                            description: 'Configuration ID',
+                        },
+                        version: {
+                            type: 'string',
+                            description: 'Configuration version',
+                        },
+                        sections: {
+                            type: 'object',
+                            description: 'Homepage sections configuration',
+                            properties: {
+                                hero: { type: 'object' },
+                                about: { type: 'object' },
+                                projects: { type: 'object' },
+                                skills: { type: 'object' },
+                                contact: { type: 'object' },
+                            },
+                        },
+                        order: {
+                            type: 'array',
+                            items: { type: 'string' },
+                            description: 'Section display order',
+                        },
+                        isActive: {
+                            type: 'boolean',
+                            description: 'Whether this configuration is active',
+                        },
+                        createdAt: {
+                            type: 'string',
+                            format: 'date-time',
+                        },
+                        updatedAt: {
+                            type: 'string',
+                            format: 'date-time',
+                        },
+                    },
+                },
             },
         },
         tags: [
@@ -268,6 +327,10 @@ const options: swaggerJsdoc.Options = {
             {
                 name: 'Visitors',
                 description: 'Visitor tracking endpoints',
+            },
+            {
+                name: 'Homepage Config',
+                description: 'Homepage configuration management endpoints',
             },
         ],
     },

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { projectsAPI } from '../../services/api';
-import { FaPlus, FaEdit, FaTrash, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaTimes, FaInfoCircle } from 'react-icons/fa';
+import { useToast } from '../../hooks/useToast';
+import TechStackInput from './TechStackInput';
 
 interface Project {
   _id: string;
   title: string;
   description: string;
-  longDescription?: string;
   techStack: string[];
   githubUrl?: string;
   liveUrl?: string;
@@ -20,10 +21,10 @@ const ProjectsManager = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const { showFromResponse, showError } = useToast();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    longDescription: '',
     techStack: [] as string[],
     githubUrl: '',
     liveUrl: '',
@@ -31,7 +32,6 @@ const ProjectsManager = () => {
     featured: false,
     order: 0,
   });
-  const [techInput, setTechInput] = useState('');
 
   useEffect(() => {
     fetchProjects();
@@ -54,7 +54,6 @@ const ProjectsManager = () => {
       setFormData({
         title: project.title,
         description: project.description,
-        longDescription: project.longDescription || '',
         techStack: project.techStack,
         githubUrl: project.githubUrl || '',
         liveUrl: project.liveUrl || '',
@@ -67,7 +66,6 @@ const ProjectsManager = () => {
       setFormData({
         title: '',
         description: '',
-        longDescription: '',
         techStack: [],
         githubUrl: '',
         liveUrl: '',
@@ -84,20 +82,10 @@ const ProjectsManager = () => {
     setEditingProject(null);
   };
 
-  const handleAddTech = () => {
-    if (techInput.trim() && !formData.techStack.includes(techInput.trim())) {
-      setFormData({
-        ...formData,
-        techStack: [...formData.techStack, techInput.trim()],
-      });
-      setTechInput('');
-    }
-  };
-
-  const handleRemoveTech = (tech: string) => {
+  const handleTechStackChange = (techStack: string[]) => {
     setFormData({
       ...formData,
-      techStack: formData.techStack.filter((t) => t !== tech),
+      techStack,
     });
   };
 
@@ -110,30 +98,36 @@ const ProjectsManager = () => {
         githubUrl: formData.githubUrl?.trim() || undefined,
         liveUrl: formData.liveUrl?.trim() || undefined,
         imageUrl: formData.imageUrl?.trim() || undefined,
-        longDescription: formData.longDescription?.trim() || undefined,
       };
 
+      let response;
       if (editingProject) {
-        await projectsAPI.update(editingProject._id, submitData);
+        response = await projectsAPI.update(editingProject._id, submitData);
       } else {
-        await projectsAPI.create(submitData);
+        response = await projectsAPI.create(submitData);
       }
       await fetchProjects();
       handleCloseModal();
-    } catch (error) {
+      // Show success toast
+      showFromResponse(response);
+    } catch (error: any) {
       console.error('Error saving project:', error);
-      alert('Failed to save project. Please try again.');
+      // Show error toast
+      showError(error);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
     try {
-      await projectsAPI.delete(id);
+      const response = await projectsAPI.delete(id);
       await fetchProjects();
-    } catch (error) {
+      // Show success toast
+      showFromResponse(response);
+    } catch (error: any) {
       console.error('Error deleting project:', error);
-      alert('Failed to delete project. Please try again.');
+      // Show error toast
+      showError(error);
     }
   };
 
@@ -234,49 +228,24 @@ const ProjectsManager = () => {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     required
-                    rows={3}
+                    maxLength={2000}
+                    rows={5}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+                    {formData.description.length} / 2000 characters
+                  </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Tech Stack *
                   </label>
-                  <div className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      value={techInput}
-                      onChange={(e) => setTechInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTech())}
-                      placeholder="Add technology"
-                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddTech}
-                      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                    >
-                      Add
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.techStack.map((tech) => (
-                      <span
-                        key={tech}
-                        className="px-3 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded-full flex items-center gap-2"
-                      >
-                        {tech}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveTech(tech)}
-                          className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200"
-                        >
-                          <FaTimes className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
+                  <TechStackInput
+                    value={formData.techStack}
+                    onChange={handleTechStackChange}
+                    placeholder="Type to search or add technology..."
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -316,26 +285,70 @@ const ProjectsManager = () => {
                   />
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.featured}
-                      onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Featured</span>
-                  </label>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Order
-                    </label>
+                <div className="flex items-end gap-6">
+                  {/* Order Input */}
+                  <div className="flex flex-col flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Order
+                      </label>
+                      <div className="relative group">
+                        <FaInfoCircle className="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help hover:text-primary-600 dark:hover:text-primary-400 transition-colors" />
+                        <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-50 pointer-events-none">
+                          <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-2xl border border-gray-700 dark:border-gray-600 w-56">
+                            <div className="font-semibold mb-0.5 text-primary-300">Display Order</div>
+                            <div className="text-gray-300 leading-snug">
+                              Lower numbers appear first
+                            </div>
+                            <div className="absolute -bottom-1 left-4 w-2 h-2 bg-gray-900 dark:bg-gray-800 border-r border-b border-gray-700 dark:border-gray-600 transform rotate-45"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                     <input
                       type="number"
                       value={formData.order}
                       onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                      className="w-20 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      min="0"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
+                  </div>
+
+                  {/* Featured Toggle */}
+                  <div className="flex flex-col flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Featured
+                      </label>
+                      <div className="relative group">
+                        <FaInfoCircle className="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help hover:text-primary-600 dark:hover:text-primary-400 transition-colors" />
+                        <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block z-50 pointer-events-none">
+                          <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-2xl border border-gray-700 dark:border-gray-600 w-56">
+                            <div className="font-semibold mb-0.5 text-primary-300">Featured Project</div>
+                            <div className="text-gray-300 leading-snug">
+                              Highlight prominently on homepage
+                            </div>
+                            <div className="absolute -bottom-1 right-4 w-2 h-2 bg-gray-900 dark:bg-gray-800 border-r border-b border-gray-700 dark:border-gray-600 transform rotate-45"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, featured: !formData.featured })}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${formData.featured
+                          ? 'bg-primary-600 dark:bg-primary-500'
+                          : 'bg-gray-300 dark:bg-gray-600'
+                        }`}
+                      role="switch"
+                      aria-checked={formData.featured}
+                      aria-label="Toggle featured status"
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.featured ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                      />
+                    </button>
                   </div>
                 </div>
 

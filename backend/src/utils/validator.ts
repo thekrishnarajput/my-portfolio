@@ -89,11 +89,6 @@ export const validator = {
         .isLength({ max: VALIDATION.MAX_DESCRIPTION_LENGTH })
         .withMessage(`Description must not exceed ${VALIDATION.MAX_DESCRIPTION_LENGTH} characters!`),
 
-    projectLongDescription: body("longDescription")
-        .optional()
-        .trim()
-        .isLength({ max: VALIDATION.MAX_LONG_DESCRIPTION_LENGTH })
-        .withMessage(`Long description must not exceed ${VALIDATION.MAX_LONG_DESCRIPTION_LENGTH} characters!`),
 
     projectTechStack: body("techStack")
         .isArray({ min: 1 })
@@ -297,7 +292,6 @@ export const loginValidation = [
 export const createProjectValidation = [
     validator.projectTitle,
     validator.projectDescription,
-    validator.projectLongDescription,
     validator.projectTechStack,
     validator.projectTechStackItem,
     validator.projectGithubUrl,
@@ -314,7 +308,6 @@ export const createProjectValidation = [
 export const updateProjectValidation = [
     validator.projectTitleOptional,
     validator.projectDescriptionOptional,
-    validator.projectLongDescription,
     validator.projectTechStackOptional,
     validator.projectTechStackItem,
     validator.projectGithubUrl,

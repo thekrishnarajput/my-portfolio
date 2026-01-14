@@ -60,7 +60,7 @@ export type SkillCategory = typeof SKILL_CATEGORIES[number];
 
 export const PAGINATION = {
     DEFAULT_PAGE: 1,
-    DEFAULT_LIMIT: 10,
+    DEFAULT_LIMIT: 25,
     MAX_LIMIT: 100,
 } as const;
 
@@ -75,8 +75,7 @@ export const JWT = {
 
 export const VALIDATION = {
     MAX_TITLE_LENGTH: 100,
-    MAX_DESCRIPTION_LENGTH: 500,
-    MAX_LONG_DESCRIPTION_LENGTH: 2000,
+    MAX_DESCRIPTION_LENGTH: 2000,
     MAX_SKILL_NAME_LENGTH: 50,
     MAX_NAME_LENGTH: 100,
     MAX_SUBJECT_LENGTH: 200,

@@ -3,8 +3,21 @@ import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { FaLinkedin, FaEnvelope, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { contactAPI, linkedinAPI } from '../../services/api';
+import { useToast } from '../../hooks/useToast';
 
-const Contact = () => {
+interface ContactProps {
+  config?: {
+    enabled?: boolean;
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    email?: string;
+    linkedinUrl?: string;
+    showLinkedInFollowers?: boolean;
+  };
+}
+
+const Contact = ({ config }: ContactProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,6 +27,7 @@ const Contact = () => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [linkedinFollowers, setLinkedinFollowers] = useState<number | null>(null);
+  const { showFromResponse, showError } = useToast();
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
@@ -47,11 +61,15 @@ const Contact = () => {
     setStatus('idle');
 
     try {
-      await contactAPI.send(formData);
+      const response = await contactAPI.send(formData);
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
-    } catch (error) {
+      // Show toast from API response
+      showFromResponse(response);
+    } catch (error: any) {
       setStatus('error');
+      // Show error toast
+      showError(error);
     } finally {
       setLoading(false);
     }
@@ -71,11 +89,16 @@ const Contact = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            Get In Touch
+            {config?.title || 'Get In Touch'}
           </h2>
           <div className="w-24 h-1 bg-primary-600 mx-auto mb-8" />
+          {config?.subtitle && (
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-4">
+              {config.subtitle}
+            </p>
+          )}
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-            Have a project in mind or want to collaborate? I'd love to hear from you!
+            {config?.description || "Have a project in mind or want to collaborate? I'd love to hear from you!"}
           </p>
         </motion.div>
 
@@ -191,38 +214,42 @@ const Contact = () => {
                 Connect With Me
               </h3>
               <div className="space-y-6">
-                <a
-                  href="https://www.linkedin.com/in/thekrishnarajput"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
-                >
-                  <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-lg group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
-                    <FaLinkedin className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">LinkedIn</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {linkedinFollowers !== null
-                        ? `${linkedinFollowers} followers`
-                        : 'Connect with me'}
-                    </p>
-                  </div>
-                </a>
-                <a
-                  href="mailto:hey@mukeshkarn.com"
-                  className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
-                >
-                  <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-lg group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
-                    <FaEnvelope className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">Email</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      hey@mukeshkarn.com
-                    </p>
-                  </div>
-                </a>
+                {config?.linkedinUrl && (
+                  <a
+                    href={config.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                  >
+                    <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-lg group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
+                      <FaLinkedin className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">LinkedIn</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {config.showLinkedInFollowers !== false && linkedinFollowers !== null
+                          ? `${linkedinFollowers} followers`
+                          : 'Connect with me'}
+                      </p>
+                    </div>
+                  </a>
+                )}
+                {config?.email && (
+                  <a
+                    href={`mailto:${config.email}`}
+                    className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                  >
+                    <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-lg group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
+                      <FaEnvelope className="w-6 h-6 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">Email</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {config.email}
+                      </p>
+                    </div>
+                  </a>
+                )}
               </div>
             </div>
 

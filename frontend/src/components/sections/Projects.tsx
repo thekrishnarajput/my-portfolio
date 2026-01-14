@@ -9,7 +9,6 @@ interface Project {
   _id: string;
   title: string;
   description: string;
-  longDescription?: string;
   techStack: string[];
   githubUrl?: string;
   liveUrl?: string;
@@ -17,7 +16,16 @@ interface Project {
   featured: boolean;
 }
 
-const Projects = () => {
+interface ProjectsProps {
+  config?: {
+    enabled?: boolean;
+    title?: string;
+    subtitle?: string;
+    description?: string;
+  };
+}
+
+const Projects = ({ config }: ProjectsProps) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -79,11 +87,16 @@ const Projects = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            Projects
+            {config?.title || 'Projects'}
           </h2>
           <div className="w-24 h-1 bg-primary-600 mx-auto mb-8" />
+          {config?.subtitle && (
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-4">
+              {config.subtitle}
+            </p>
+          )}
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-            A collection of projects showcasing my skills and experience in software development.
+            {config?.description || 'A collection of projects showcasing my skills and experience in software development.'}
           </p>
         </motion.div>
 

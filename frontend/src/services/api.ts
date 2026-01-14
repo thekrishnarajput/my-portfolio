@@ -70,6 +70,34 @@ export const linkedinAPI = {
 export const visitorsAPI = {
   trackVisit: () => api.post('/visitors/track'),
   getCount: () => api.get('/visitors/count'),
+  getAll: (page?: number, limit?: number, sortBy?: string, sortOrder?: 'asc' | 'desc') => {
+    const params: any = {};
+    if (page) params.page = page;
+    if (limit) params.limit = limit;
+    if (sortBy) params.sortBy = sortBy;
+    if (sortOrder) params.sortOrder = sortOrder;
+    return api.get('/visitors', { params });
+  },
+};
+
+export const techStacksAPI = {
+  search: (query?: string) => {
+    const params = query ? { params: { query } } : {};
+    return api.get('/tech-stacks', params);
+  },
+  create: (name: string) => api.post('/tech-stacks', { name }),
+  delete: (id: string) => api.post(`/tech-stacks/${id}/delete`),
+  getAll: () => api.get('/tech-stacks'),
+};
+
+export const homepageConfigAPI = {
+  getActive: () => api.get('/homepage-config'),
+  getAll: () => api.get('/homepage-config/all'),
+  getById: (id: string) => api.get(`/homepage-config/${id}`),
+  create: (data: any) => api.post('/homepage-config', data),
+  update: (id: string, data: any) => api.post(`/homepage-config/${id}/update`, data),
+  delete: (id: string) => api.post(`/homepage-config/${id}/delete`),
+  activate: (id: string) => api.post(`/homepage-config/${id}/activate`),
 };
 
 export default api;

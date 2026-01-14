@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import ProjectsManager from './ProjectsManager';
 import SkillsManager from './SkillsManager';
-import { FaSignOutAlt, FaFolderOpen, FaCode } from 'react-icons/fa';
+import VisitorsManager from './VisitorsManager';
+import HomepageConfigManager from './HomepageConfigManager';
+import { FaSignOutAlt, FaFolderOpen, FaCode, FaUsers, FaHome } from 'react-icons/fa';
 
 const AdminDashboard = () => {
   const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'projects' | 'skills'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'skills' | 'visitors' | 'homepage'>('projects');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 md:pt-28 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
@@ -54,6 +56,26 @@ const AdminDashboard = () => {
             >
               <FaCode /> Skills
             </button>
+            <button
+              onClick={() => setActiveTab('visitors')}
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
+                activeTab === 'visitors'
+                  ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <FaUsers /> Visitors
+            </button>
+            <button
+              onClick={() => setActiveTab('homepage')}
+              className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
+                activeTab === 'homepage'
+                  ? 'text-primary-600 dark:text-primary-400 border-b-2 border-primary-600 dark:border-primary-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              <FaHome /> Homepage Config
+            </button>
           </div>
         </div>
 
@@ -61,6 +83,8 @@ const AdminDashboard = () => {
         <div>
           {activeTab === 'projects' && <ProjectsManager />}
           {activeTab === 'skills' && <SkillsManager />}
+          {activeTab === 'visitors' && <VisitorsManager />}
+          {activeTab === 'homepage' && <HomepageConfigManager />}
         </div>
       </div>
     </div>

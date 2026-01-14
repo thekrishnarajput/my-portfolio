@@ -58,9 +58,6 @@ router.get('/', projectController.getAllProjects);
  *                 maxLength: 100
  *               description:
  *                 type: string
- *                 maxLength: 500
- *               longDescription:
- *                 type: string
  *                 maxLength: 2000
  *               techStack:
  *                 type: array

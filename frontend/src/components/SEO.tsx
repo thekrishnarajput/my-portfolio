@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { useHomepageConfig } from '../hooks/useHomepageConfig';
 
 interface SEOProps {
   title?: string;
@@ -26,9 +27,19 @@ const SEO: React.FC<SEOProps> = ({
   type = 'website',
   author = defaultAuthor,
 }) => {
+  const { config: homepageConfig } = useHomepageConfig();
+  const faviconUrl = homepageConfig?.branding?.favicon || '/logo.png';
+  
   const fullTitle = title === defaultTitle ? title : `${title} | ${defaultTitle}`;
   const fullUrl = url.startsWith('http') ? url : `${siteUrl}${url}`;
   const fullImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
+  
+  // Handle favicon URL (could be base64 or URL)
+  const fullFaviconUrl = faviconUrl.startsWith('data:') 
+    ? faviconUrl 
+    : faviconUrl.startsWith('http') 
+    ? faviconUrl 
+    : `${siteUrl}${faviconUrl}`;
 
   // Structured Data (JSON-LD) for Person/Portfolio
   const structuredData = {
@@ -148,6 +159,11 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       <meta name="apple-mobile-web-app-title" content="Mukesh Karn" />
+      
+      {/* Favicon */}
+      <link rel="icon" type="image/png" href={fullFaviconUrl} />
+      <link rel="shortcut icon" type="image/png" href={fullFaviconUrl} />
+      <link rel="apple-touch-icon" href={fullFaviconUrl} />
 
       {/* Structured Data */}
       <script type="application/ld+json">

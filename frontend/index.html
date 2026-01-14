@@ -53,6 +53,16 @@
   <meta name="format-detection" content="telephone=no" />
 
   <title>Mukesh Karn (Krishna) - Software Engineer Portfolio</title>
+  
+  <!-- Prevent theme flash by applying theme before React loads -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+    })();
+  </script>
 </head>
 
 <body>

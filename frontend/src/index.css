@@ -40,3 +40,93 @@
   @apply bg-gray-500 dark:bg-gray-500;
 }
 
+/* Toast Notification Styles */
+.Toastify__toast-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 0 1rem 1rem 1rem;
+}
+
+.Toastify__toast {
+  @apply shadow-lg;
+  border-radius: 0.5rem;
+  font-family: inherit;
+  min-height: 48px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.Toastify__toast-body {
+  padding: 0;
+  margin: 0;
+  padding-right: 28px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-size: 14px;
+}
+
+.Toastify__toast--success {
+  @apply bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500;
+}
+
+.Toastify__toast--error {
+  @apply bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500;
+}
+
+.Toastify__toast--warning {
+  @apply bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500;
+}
+
+.Toastify__toast--info {
+  @apply bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500;
+}
+
+.Toastify__progress-bar {
+  height: 3px;
+}
+
+.Toastify__progress-bar--success {
+  @apply bg-green-500;
+}
+
+.Toastify__progress-bar--error {
+  @apply bg-red-500;
+}
+
+.Toastify__progress-bar--warning {
+  @apply bg-yellow-500;
+}
+
+.Toastify__progress-bar--info {
+  @apply bg-blue-500;
+}
+
+.Toastify__progress-bar--light {
+  background: linear-gradient(
+    to right,
+    #0284c7,
+    #0ea5e9,
+    #0284c7
+  );
+}
+
+.Toastify__progress-bar--dark {
+  background: linear-gradient(
+    to right,
+    #0ea5e9,
+    #38bdf8,
+    #0ea5e9
+  );
+}
+
+.Toastify__close-button {
+  @apply text-gray-600 dark:text-gray-300 opacity-70 hover:opacity-100;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  padding: 4px;
+  width: 20px;
+  height: 20px;
+}

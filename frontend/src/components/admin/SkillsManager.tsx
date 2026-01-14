@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { skillsAPI } from '../../services/api';
-import { FaPlus, FaEdit, FaTrash, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaTimes, FaInfoCircle } from 'react-icons/fa';
+import { useToast } from '../../hooks/useToast';
 
 interface Skill {
   _id: string;
@@ -16,6 +17,7 @@ const SkillsManager = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
+  const { showFromResponse, showError } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     category: 'frontend' as Skill['category'],
@@ -70,27 +72,34 @@ const SkillsManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let response;
       if (editingSkill) {
-        await skillsAPI.update(editingSkill._id, formData);
+        response = await skillsAPI.update(editingSkill._id, formData);
       } else {
-        await skillsAPI.create(formData);
+        response = await skillsAPI.create(formData);
       }
       await fetchSkills();
       handleCloseModal();
-    } catch (error) {
+      // Show success toast
+      showFromResponse(response);
+    } catch (error: any) {
       console.error('Error saving skill:', error);
-      alert('Failed to save skill. Please try again.');
+      // Show error toast
+      showError(error);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this skill?')) return;
     try {
-      await skillsAPI.delete(id);
+      const response = await skillsAPI.delete(id);
       await fetchSkills();
-    } catch (error) {
+      // Show success toast
+      showFromResponse(response);
+    } catch (error: any) {
       console.error('Error deleting skill:', error);
-      alert('Failed to delete skill. Please try again.');
+      // Show error toast
+      showError(error);
     }
   };
 
@@ -230,9 +239,23 @@ const SkillsManager = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Order
-                  </label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Order
+                    </label>
+                    <div className="relative group">
+                      <FaInfoCircle className="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help hover:text-primary-600 dark:hover:text-primary-400 transition-colors" />
+                      <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-50 pointer-events-none">
+                        <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-2xl border border-gray-700 dark:border-gray-600 w-56">
+                          <div className="font-semibold mb-0.5 text-primary-300">Display Order</div>
+                          <div className="text-gray-300 leading-snug">
+                            Lower numbers appear first
+                          </div>
+                          <div className="absolute -bottom-1 left-4 w-2 h-2 bg-gray-900 dark:bg-gray-800 border-r border-b border-gray-700 dark:border-gray-600 transform rotate-45"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <input
                     type="number"
                     value={formData.order}

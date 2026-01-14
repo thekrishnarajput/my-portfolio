@@ -23,6 +23,8 @@ import contactRoutes from './routes/contact';
 import authRoutes from './routes/auth';
 import linkedinRoutes from './routes/linkedin';
 import visitorRoutes from './routes/visitors';
+import techStackRoutes from './routes/techStacks';
+import homepageConfigRoutes from './routes/homepageConfig';
 
 // Import controllers
 import { HealthController } from './controllers/healthController';
@@ -87,6 +89,8 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 app.use('/api/visitors', visitorRoutes);
+app.use('/api/tech-stacks', techStackRoutes);
+app.use('/api/homepage-config', homepageConfigRoutes);
 
 // 404 handler
 app.use((_: Request, res: Response) => {

@@ -11,7 +11,16 @@ interface Skill {
   icon?: string;
 }
 
-const Skills = () => {
+interface SkillsProps {
+  config?: {
+    enabled?: boolean;
+    title?: string;
+    subtitle?: string;
+    description?: string;
+  };
+}
+
+const Skills = ({ config }: SkillsProps) => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [ref, inView] = useInView({
@@ -67,11 +76,16 @@ const Skills = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            Skills
+            {config?.title || 'Skills'}
           </h2>
           <div className="w-24 h-1 bg-primary-600 mx-auto mb-8" />
+          {config?.subtitle && (
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-4">
+              {config.subtitle}
+            </p>
+          )}
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-            Technologies and tools I work with to build amazing applications.
+            {config?.description || 'Technologies and tools I work with to build amazing applications.'}
           </p>
         </motion.div>
 

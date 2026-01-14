@@ -8,10 +8,12 @@ import Footer from './components/Footer';
 import VisitorCounter from './components/VisitorCounter';
 import ScrollToTop from './components/ScrollToTop';
 import RocketScrollToTop from './components/RocketScrollToTop';
+import ToastContainer from './components/ToastContainer';
 import SEO from './components/SEO';
 
 function AppContent() {
   const location = useLocation();
+  const isAdminPage = location.pathname === '/admin';
 
   return (
     <>
@@ -33,9 +35,10 @@ function AppContent() {
             <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
-        <VisitorCounter />
+        {!isAdminPage && <VisitorCounter />}
         <Footer />
         <RocketScrollToTop />
+        <ToastContainer />
       </div>
     </>
   );

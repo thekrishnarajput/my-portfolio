@@ -257,7 +257,39 @@ function CodeBrackets() {
   );
 }
 
-const Hero = () => {
+interface HeroProps {
+  config?: {
+    enabled?: boolean;
+    badge?: string;
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    primaryButton?: {
+      text: string;
+      href: string;
+      target?: '_self' | '_blank';
+    };
+    secondaryButton?: {
+      text: string;
+      href: string;
+      target?: '_self' | '_blank';
+    };
+    socialLinks?: {
+      github?: string;
+      linkedin?: string;
+      email?: string;
+    };
+    showScrollIndicator?: boolean;
+  };
+}
+
+const Hero = ({ config }: HeroProps) => {
+  // Fallback to default values if config is not provided
+  const badge = config?.badge || '<SoftwareEngineer />';
+  const title = config?.title || 'Mukesh Karn';
+  const subtitle = config?.subtitle || '(Krishna)';
+  const description = config?.description || 'Full-stack developer specializing in modern web technologies, building scalable applications with clean code and best practices.';
+  const showScrollIndicator = config?.showScrollIndicator !== false;
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
@@ -316,16 +348,18 @@ const Hero = () => {
           className="space-y-6"
         >
           {/* Code-style badge */}
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 dark:bg-primary-400/10 border border-primary-500/20 dark:border-primary-400/20 backdrop-blur-sm"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={inView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <span className="text-xs md:text-sm font-mono text-primary-600 dark:text-primary-400">
-              {'<SoftwareEngineer />'}
-            </span>
-          </motion.div>
+          {badge && (
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 dark:bg-primary-400/10 border border-primary-500/20 dark:border-primary-400/20 backdrop-blur-sm"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={inView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <span className="text-xs md:text-sm font-mono text-primary-600 dark:text-primary-400">
+                {badge}
+              </span>
+            </motion.div>
+          )}
 
           <motion.h1
             className="text-5xl md:text-7xl lg:text-8xl font-bold"
@@ -335,21 +369,23 @@ const Hero = () => {
           >
             <span className="bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 dark:from-primary-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
               <Typewriter
-                text="Mukesh Karn"
+                text={title}
                 speed={100}
                 showCursor={true}
               />
             </span>
           </motion.h1>
 
-          <motion.p
-            className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 font-medium"
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            (Krishna)
-          </motion.p>
+          {subtitle && (
+            <motion.p
+              className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 font-medium"
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              {subtitle}
+            </motion.p>
+          )}
 
           <motion.h2
             className="text-2xl md:text-4xl lg:text-5xl font-semibold text-gray-800 dark:text-gray-200"
@@ -364,99 +400,118 @@ const Hero = () => {
             <span className="font-mono text-primary-600 dark:text-primary-400">;</span>
           </motion.h2>
 
-          <motion.p
-            className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed"
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-            Full-stack developer specializing in modern web technologies,
-            building scalable applications with clean code and best practices.
-          </motion.p>
+          {description && (
+            <motion.p
+              className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            >
+              {description}
+            </motion.p>
+          )}
 
           {/* CTA Buttons */}
-          <motion.div
-            className="flex flex-wrap justify-center gap-4 mt-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 1 }}
-          >
-            <motion.a
-              href="#projects"
-              className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-lg hover:shadow-xl"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          {(config?.primaryButton || config?.secondaryButton || config?.socialLinks?.github) && (
+            <motion.div
+              className="flex flex-wrap justify-center gap-4 mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 1 }}
             >
-              View Projects
-            </motion.a>
-            <motion.a
-              href="#contact"
-              className="px-6 py-3 bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 border-2 border-primary-600 dark:border-primary-400 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Get In Touch
-            </motion.a>
-            <motion.a
-              href="https://github.com/thekrishnarajput"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3 bg-gray-800 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-900 dark:hover:bg-gray-600 transition-colors font-medium flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <FaGithub /> GitHub
-            </motion.a>
-          </motion.div>
+              {config?.primaryButton && (
+                <motion.a
+                  href={config.primaryButton.href}
+                  target={config.primaryButton.target || '_self'}
+                  className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-lg hover:shadow-xl"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {config.primaryButton.text}
+                </motion.a>
+              )}
+              {config?.secondaryButton && (
+                <motion.a
+                  href={config.secondaryButton.href}
+                  target={config.secondaryButton.target || '_self'}
+                  className="px-6 py-3 bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 border-2 border-primary-600 dark:border-primary-400 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {config.secondaryButton.text}
+                </motion.a>
+              )}
+              {config?.socialLinks?.github && (
+                <motion.a
+                  href={config.socialLinks.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 bg-gray-800 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-900 dark:hover:bg-gray-600 transition-colors font-medium flex items-center gap-2"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaGithub /> GitHub
+                </motion.a>
+              )}
+            </motion.div>
+          )}
 
           {/* Social Links */}
-          <motion.div
-            className="flex justify-center gap-6 mt-8"
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.8, delay: 1.2 }}
-          >
-            <motion.a
-              href="https://github.com/thekrishnarajput"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-              aria-label="GitHub"
-              whileHover={{ scale: 1.2, rotate: 5 }}
-              whileTap={{ scale: 0.9 }}
+          {(config?.socialLinks?.github || config?.socialLinks?.linkedin) && (
+            <motion.div
+              className="flex justify-center gap-6 mt-8"
+              initial={{ opacity: 0 }}
+              animate={inView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 1.2 }}
             >
-              <FaGithub className="w-6 h-6" />
-            </motion.a>
-            <motion.a
-              href="https://www.linkedin.com/in/thekrishnarajput"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-              aria-label="LinkedIn"
-              whileHover={{ scale: 1.2, rotate: -5 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <FaLinkedin className="w-6 h-6" />
-            </motion.a>
-          </motion.div>
+              {config.socialLinks.github && (
+                <motion.a
+                  href={config.socialLinks.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  aria-label="GitHub"
+                  whileHover={{ scale: 1.2, rotate: 5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <FaGithub className="w-6 h-6" />
+                </motion.a>
+              )}
+              {config.socialLinks.linkedin && (
+                <motion.a
+                  href={config.socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  aria-label="LinkedIn"
+                  whileHover={{ scale: 1.2, rotate: -5 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <FaLinkedin className="w-6 h-6" />
+                </motion.a>
+              )}
+            </motion.div>
+          )}
         </motion.div>
       </motion.div>
 
       {/* Scroll Indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, repeat: Infinity, duration: 2 }}
-      >
-        <div className="w-6 h-10 border-2 border-primary-500 dark:border-primary-400 rounded-full flex justify-center">
-          <motion.div
-            className="w-1 h-3 bg-primary-500 dark:bg-primary-400 rounded-full mt-2"
-            animate={{ y: [0, 12, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          />
-        </div>
-      </motion.div>
+      {showScrollIndicator && (
+        <motion.div
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, repeat: Infinity, duration: 2 }}
+        >
+          <div className="w-6 h-10 border-2 border-primary-500 dark:border-primary-400 rounded-full flex justify-center">
+            <motion.div
+              className="w-1 h-3 bg-primary-500 dark:bg-primary-400 rounded-full mt-2"
+              animate={{ y: [0, 12, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+            />
+          </div>
+        </motion.div>
+      )}
     </section>
   );
 };

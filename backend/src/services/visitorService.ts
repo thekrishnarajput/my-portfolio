@@ -84,4 +84,24 @@ export class VisitorService {
   async getTotalVisitorCount(): Promise<number> {
     return this.visitorRepository.getTotalVisitorCount();
   }
+
+  /**
+   * Get all visitors with pagination and sorting
+   */
+  async getAllVisitors(
+    page: number = 1,
+    limit: number = 25,
+    sortBy: string = 'lastVisit',
+    sortOrder: 'asc' | 'desc' = 'desc'
+  ): Promise<{ visitors: any[]; total: number; totalPages: number; currentPage: number }> {
+    const { visitors, total } = await this.visitorRepository.findAll(page, limit, sortBy, sortOrder);
+    const totalPages = Math.ceil(total / limit);
+    
+    return {
+      visitors,
+      total,
+      totalPages,
+      currentPage: page,
+    };
+  }
 }
