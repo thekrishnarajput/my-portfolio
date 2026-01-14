@@ -42,7 +42,7 @@ app.use(compression());
 // CORS configuration
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin: ['http://localhost:3000', env.FRONTEND_URL],
     credentials: true,
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
