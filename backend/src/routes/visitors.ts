@@ -10,7 +10,7 @@ const visitorController = new VisitorController();
  * /api/visitors/track:
  *   post:
  *     summary: Track a visitor visit
- *     description: Track a visitor visit and return the total visitor count
+ *     description: Track a visitor visit and return visitor counts
  *     tags: [Visitors]
  *     responses:
  *       200:
@@ -27,7 +27,9 @@ const visitorController = new VisitorController();
  *                   properties:
  *                     isNewVisitor:
  *                       type: boolean
- *                     totalCount:
+ *                     uniqueVisitors:
+ *                       type: number
+ *                     totalVisits:
  *                       type: number
  */
 router.post('/track', visitorController.trackVisit);
@@ -36,12 +38,12 @@ router.post('/track', visitorController.trackVisit);
  * @swagger
  * /api/visitors/count:
  *   get:
- *     summary: Get total visitor count
- *     description: Retrieve the total number of unique visitors
+ *     summary: Get visitor counts
+ *     description: Retrieve both unique visitors count and total visits count
  *     tags: [Visitors]
  *     responses:
  *       200:
- *         description: Visitor count retrieved successfully
+ *         description: Visitor counts retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -52,7 +54,9 @@ router.post('/track', visitorController.trackVisit);
  *                 data:
  *                   type: object
  *                   properties:
- *                     count:
+ *                     uniqueVisitors:
+ *                       type: number
+ *                     totalVisits:
  *                       type: number
  */
 router.get('/count', visitorController.getVisitorCount);

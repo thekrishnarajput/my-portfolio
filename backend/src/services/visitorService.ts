@@ -36,7 +36,7 @@ export class VisitorService {
   /**
    * Track a visitor visit
    */
-  async trackVisit(req: any): Promise<{ isNewVisitor: boolean; totalCount: number }> {
+  async trackVisit(req: any): Promise<{ isNewVisitor: boolean; uniqueVisitors: number; totalVisits: number }> {
     const ipAddress = this.getClientIp(req);
     const userAgent = req.headers['user-agent'] || 'unknown';
     const visitorId = this.generateVisitorId(ipAddress, userAgent);
@@ -69,20 +69,32 @@ export class VisitorService {
       }
     }
 
-    // Get total visitor count
-    const totalCount = await this.visitorRepository.getTotalVisitorCount();
+    // Get both counts
+    const [uniqueVisitors, totalVisits] = await Promise.all([
+      this.visitorRepository.getUniqueVisitorCount(),
+      this.visitorRepository.getTotalVisitsCount(),
+    ]);
 
     return {
       isNewVisitor,
-      totalCount,
+      uniqueVisitors,
+      totalVisits,
     };
   }
 
   /**
-   * Get total visitor count
+   * Get visitor counts (unique visitors and total visits)
    */
-  async getTotalVisitorCount(): Promise<number> {
-    return this.visitorRepository.getTotalVisitorCount();
+  async getVisitorCounts(): Promise<{ uniqueVisitors: number; totalVisits: number }> {
+    const [uniqueVisitors, totalVisits] = await Promise.all([
+      this.visitorRepository.getUniqueVisitorCount(),
+      this.visitorRepository.getTotalVisitsCount(),
+    ]);
+
+    return {
+      uniqueVisitors,
+      totalVisits,
+    };
   }
 
   /**

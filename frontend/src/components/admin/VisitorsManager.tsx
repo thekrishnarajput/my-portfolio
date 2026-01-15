@@ -28,7 +28,8 @@ const VisitorsManager = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [uniqueVisitors, setUniqueVisitors] = useState(0);
+  const [totalVisits, setTotalVisits] = useState(0);
   const [limit, setLimit] = useState(25);
   const [sortBy, setSortBy] = useState<SortField>('lastVisit');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -36,6 +37,7 @@ const VisitorsManager = () => {
 
   useEffect(() => {
     fetchVisitors();
+    fetchCounts();
   }, [currentPage, sortBy, sortOrder, limit]);
 
   const fetchVisitors = async () => {
@@ -45,12 +47,25 @@ const VisitorsManager = () => {
       const data: VisitorsResponse = response.data.data;
       setVisitors(data.visitors);
       setTotalPages(data.totalPages);
-      setTotal(data.total);
+      setUniqueVisitors(data.total);
     } catch (error: any) {
       console.error('Error fetching visitors:', error);
       showError(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCounts = async () => {
+    try {
+      const response = await visitorsAPI.getCount();
+      if (response.data.success) {
+        const counts = response.data.data;
+        setUniqueVisitors(counts.uniqueVisitors || 0);
+        setTotalVisits(counts.totalVisits || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching visitor counts:', error);
     }
   };
 
@@ -135,9 +150,10 @@ const VisitorsManager = () => {
           <FaUsers className="text-2xl text-primary-600 dark:text-primary-400" />
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Visitors</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Total: {total} unique visitors
-            </p>
+            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+              <span>Total Visits: <strong className="text-primary-600 dark:text-primary-400">{totalVisits.toLocaleString()}</strong></span>
+              <span>Unique: <strong className="text-primary-600 dark:text-primary-400">{uniqueVisitors.toLocaleString()}</strong></span>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -269,7 +285,7 @@ const VisitorsManager = () => {
             <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 Showing {(currentPage - 1) * limit + 1} to{' '}
-                {Math.min(currentPage * limit, total)} of {total} visitors
+                {Math.min(currentPage * limit, uniqueVisitors)} of {uniqueVisitors} unique visitors
               </div>
               <div className="flex items-center gap-2">
                 <button
