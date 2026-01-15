@@ -59,7 +59,8 @@ const VisitorCounter = () => {
         try {
             const response = await visitorsAPI.getCount();
             if (response.data.success) {
-                setVisitorCount(response.data.data.count);
+                // Use totalVisits for the counter display
+                setVisitorCount(response.data.data.totalVisits || response.data.data.count || 0);
             }
         } catch (error) {
             console.error('Error fetching visitor count:', error);

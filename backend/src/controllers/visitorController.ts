@@ -22,12 +22,12 @@ export class VisitorController {
   );
 
   /**
-   * Get total visitor count
+   * Get visitor counts (unique visitors and total visits)
    */
   getVisitorCount = asyncHandler(
     async (_req: Request, res: Response): Promise<void> => {
-      const count = await this.visitorService.getTotalVisitorCount();
-      ResponseHelper.success(res, { count }, 'Visitor count retrieved successfully');
+      const counts = await this.visitorService.getVisitorCounts();
+      ResponseHelper.success(res, counts, 'Visitor counts retrieved successfully');
     }
   );
 

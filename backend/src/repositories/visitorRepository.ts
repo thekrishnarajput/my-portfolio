@@ -18,12 +18,20 @@ export class VisitorRepository {
     ).exec();
   }
 
-  async getTotalVisitorCount(): Promise<number> {
+  async getUniqueVisitorCount(): Promise<number> {
     return Visitor.countDocuments().exec();
   }
 
-  async getUniqueVisitorCount(): Promise<number> {
-    return Visitor.countDocuments().exec();
+  async getTotalVisitsCount(): Promise<number> {
+    const result = await Visitor.aggregate([
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$visitCount' },
+        },
+      },
+    ]).exec();
+    return result.length > 0 ? result[0].total : 0;
   }
 
   async findAll(
