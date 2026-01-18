@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaExternalLinkAlt } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaStar } from 'react-icons/fa';
 import { projectsAPI } from '../../services/api';
 import ProjectModal from '../ProjectModal';
 
@@ -14,6 +14,7 @@ interface Project {
   liveUrl?: string;
   imageUrl?: string;
   featured: boolean;
+  order: number;
 }
 
 interface ProjectsProps {
@@ -49,6 +50,17 @@ const Projects = ({ config }: ProjectsProps) => {
       setLoading(false);
     }
   };
+
+  // Sort projects: featured first, then by order
+  const sortedProjects = useMemo(() => {
+    return [...projects].sort((a, b) => {
+      // Featured projects first
+      if (a.featured && !b.featured) return -1;
+      if (!a.featured && b.featured) return 1;
+      // Then sort by order
+      return a.order - b.order;
+    });
+  }, [projects]);
 
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
@@ -100,7 +112,7 @@ const Projects = ({ config }: ProjectsProps) => {
           </p>
         </motion.div>
 
-        {projects.length === 0 ? (
+        {sortedProjects.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               No projects available. Check back soon!
@@ -108,28 +120,55 @@ const Projects = ({ config }: ProjectsProps) => {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-            {projects.map((project, index) => (
+            {sortedProjects.map((project, index) => (
               <motion.div
                 key={project._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 onClick={() => handleProjectClick(project)}
-                className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all cursor-pointer transform hover:scale-105 active:scale-95"
+                className={`bg-white dark:bg-gray-900 rounded-lg overflow-hidden transition-all cursor-pointer transform hover:scale-105 active:scale-95 ${
+                  project.featured
+                    ? 'shadow-xl border-2 border-yellow-400 dark:border-yellow-500 ring-2 ring-yellow-200 dark:ring-yellow-900/50'
+                    : 'shadow-md hover:shadow-xl'
+                }`}
               >
                 {project.imageUrl && (
-                  <div className="h-32 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                  <div className={`relative ${project.featured ? 'h-40' : 'h-32'} bg-gray-200 dark:bg-gray-700 overflow-hidden`}>
                     <img
                       src={project.imageUrl}
                       alt={project.title}
                       className="w-full h-full object-cover"
                     />
+                    {project.featured && (
+                      <div className="absolute top-2 right-2 bg-yellow-400 dark:bg-yellow-500 text-yellow-900 dark:text-yellow-900 px-2 py-1 rounded-full flex items-center gap-1 text-xs font-bold shadow-lg">
+                        <FaStar className="w-3 h-3" />
+                        <span>Featured</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {!project.imageUrl && project.featured && (
+                  <div className="relative h-32 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 flex items-center justify-center">
+                    <div className="absolute top-2 right-2 bg-yellow-400 dark:bg-yellow-500 text-yellow-900 dark:text-yellow-900 px-2 py-1 rounded-full flex items-center gap-1 text-xs font-bold shadow-lg">
+                      <FaStar className="w-3 h-3" />
+                      <span>Featured</span>
+                    </div>
                   </div>
                 )}
                 <div className="p-4">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                    {project.title}
-                  </h3>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className={`font-bold text-gray-900 dark:text-white line-clamp-2 flex-1 ${
+                      project.featured ? 'text-lg' : 'text-lg'
+                    }`}>
+                      {project.title}
+                    </h3>
+                    {!project.imageUrl && project.featured && (
+                      <div className="flex-shrink-0">
+                        <FaStar className="w-4 h-4 text-yellow-400 dark:text-yellow-500" />
+                      </div>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                     {project.description}
                   </p>

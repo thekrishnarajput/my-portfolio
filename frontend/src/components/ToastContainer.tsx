@@ -24,6 +24,10 @@ const ToastContainer = () => {
     }
   }, [theme]);
 
+  const progressBarClass = theme === 'dark'
+    ? 'Toastify__progress-bar--dark'
+    : 'Toastify__progress-bar--light';
+
   return (
     <ReactToastContainer
       position="bottom-center"
@@ -40,11 +44,7 @@ const ToastContainer = () => {
         zIndex: 9999,
       }}
       toastClassName="relative rounded-md cursor-pointer"
-      progressClassName={() =>
-        theme === 'dark'
-          ? 'Toastify__progress-bar--dark'
-          : 'Toastify__progress-bar--light'
-      }
+      progressClassName={progressBarClass}
     />
   );
 };

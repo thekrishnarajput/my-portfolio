@@ -58,17 +58,13 @@ export const showToastFromResponse = (
   // Determine toast type
   const type = getToastType(success, httpStatus);
 
-  // Toast options
+  // Toast options - let container handle autoClose
   const toastOptions: ToastOptions = {
-    position: 'bottom-center',
-    autoClose: 3000,
     hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true,
     pauseOnFocusLoss: true,
     draggable: true,
-    progress: undefined,
-    type,
   };
 
   // Show toast based on type
@@ -102,15 +98,11 @@ export const showToastFromError = (error: AxiosError<ApiResponse> | Error | any)
     const type = getToastType(false, statusCode);
 
     const toastOptions: ToastOptions = {
-      position: 'bottom-center',
-      autoClose: 3000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
       pauseOnFocusLoss: true,
       draggable: true,
-      progress: undefined,
-      type,
     };
 
     switch (type) {
@@ -128,19 +120,15 @@ export const showToastFromError = (error: AxiosError<ApiResponse> | Error | any)
     (error && typeof error === 'object' && 'message' in error
       ? error.message
       : typeof error === 'string'
-      ? error
-      : 'An error occurred') || 'An error occurred';
+        ? error
+        : 'An error occurred') || 'An error occurred';
 
   const toastOptions: ToastOptions = {
-    position: 'bottom-center',
-    autoClose: 3000,
     hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true,
     pauseOnFocusLoss: true,
     draggable: true,
-    progress: undefined,
-    type: 'error',
   };
 
   return toast.error(message, toastOptions);
@@ -152,8 +140,6 @@ export const showToastFromError = (error: AxiosError<ApiResponse> | Error | any)
 export const toastUtils = {
   success: (message: string, options?: ToastOptions) =>
     toast.success(message, {
-      position: 'bottom-center',
-      autoClose: 3000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -163,8 +149,6 @@ export const toastUtils = {
 
   error: (message: string, options?: ToastOptions) =>
     toast.error(message, {
-      position: 'bottom-center',
-      autoClose: 3000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -174,8 +158,6 @@ export const toastUtils = {
 
   warning: (message: string, options?: ToastOptions) =>
     toast.warning(message, {
-      position: 'bottom-center',
-      autoClose: 3000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -185,8 +167,6 @@ export const toastUtils = {
 
   info: (message: string, options?: ToastOptions) =>
     toast.info(message, {
-      position: 'bottom-center',
-      autoClose: 3000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,

@@ -29,17 +29,17 @@ const SEO: React.FC<SEOProps> = ({
 }) => {
   const { config: homepageConfig } = useHomepageConfig();
   const faviconUrl = homepageConfig?.branding?.favicon || '/logo.png';
-  
+
   const fullTitle = title === defaultTitle ? title : `${title} | ${defaultTitle}`;
   const fullUrl = url.startsWith('http') ? url : `${siteUrl}${url}`;
   const fullImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
-  
+
   // Handle favicon URL (could be base64 or URL)
-  const fullFaviconUrl = faviconUrl.startsWith('data:') 
-    ? faviconUrl 
-    : faviconUrl.startsWith('http') 
-    ? faviconUrl 
-    : `${siteUrl}${faviconUrl}`;
+  const fullFaviconUrl = faviconUrl.startsWith('data:')
+    ? faviconUrl
+    : faviconUrl.startsWith('http')
+      ? faviconUrl
+      : `${siteUrl}${faviconUrl}`;
 
   // Structured Data (JSON-LD) for Person/Portfolio
   const structuredData = {
@@ -151,15 +151,23 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={fullImage} />
       <meta name="twitter:image:alt" content={fullTitle} />
-      {/* <meta name="twitter:creator" content="@yourusername" /> */}
-      {/* <meta name="twitter:site" content="@yourusername" /> */}
+      {/* Uncomment and add your Twitter handle when available */}
+      <meta name="twitter:creator" content="@thekrishrajput" />
+      <meta name="twitter:site" content="@thekrishrajput" />
+
+      {/* Additional SEO Meta Tags */}
+      <meta name="geo.region" content="IN" />
+      <meta name="geo.placename" content="India" />
+      <meta name="rating" content="general" />
+      <meta name="distribution" content="global" />
+      <meta name="coverage" content="worldwide" />
 
       {/* Additional Meta Tags */}
       <meta name="theme-color" content="#000000" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-      <meta name="apple-mobile-web-app-title" content="Mukesh Karn" />
-      
+      <meta name="apple-mobile-web-app-title" content="Mukesh Karn (Krishna)" />
+
       {/* Favicon */}
       <link rel="icon" type="image/png" href={fullFaviconUrl} />
       <link rel="shortcut icon" type="image/png" href={fullFaviconUrl} />
