@@ -20,6 +20,19 @@ const transporter = nodemailer.createTransport({
 });
 
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
+  // Validate email configuration
+  if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.EMAIL_FROM) {
+    const error = new Error('Email configuration is incomplete. Please set EMAIL_HOST, EMAIL_USER, EMAIL_PASS, and EMAIL_FROM environment variables.');
+    console.error(messages.emailSendingFailed(), error.message);
+    throw error;
+  }
+
+  if (!options.to) {
+    const error = new Error('Recipient email address is required.');
+    console.error(messages.emailSendingFailed(), error.message);
+    throw error;
+  }
+
   try {
     const mailOptions = {
       from: `"Portfolio Contact" <${process.env.EMAIL_FROM}>`,
@@ -30,9 +43,17 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(messages.emailSentSuccessfully());
-  } catch (error) {
-    console.error(messages.emailSendingFailed(), error);
+    console.log(messages.emailSentSuccessfully(), `Email sent to: ${options.to}`);
+  } catch (error: any) {
+    const errorMessage = error.response || error.message || 'Unknown error';
+    console.error(messages.emailSendingFailed(), errorMessage);
+    console.error('Email configuration:', {
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT,
+      user: process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM,
+      to: options.to
+    });
     throw error;
   }
 };
