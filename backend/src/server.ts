@@ -15,6 +15,7 @@ import { errorHandler } from './errors/errorHandler';
 import { ResponseHelper } from './utils/response';
 import morganLogger from './middleware/morgan';
 import { messages } from './utils/message';
+import { verifyEmailConfig } from './utils/email';
 
 // Import routes
 import projectRoutes from './routes/projects';
@@ -115,6 +116,17 @@ async function startServer(): Promise<void> {
         logger.error('Failed to initialize admin user', error);
         // Don't exit - server should continue running
       });
+
+      // Verify email configuration (non-blocking)
+      if (env.EMAIL_HOST && env.EMAIL_USER && env.EMAIL_PASS) {
+        verifyEmailConfig().catch((error) => {
+          logger.warn('Email configuration verification failed. Contact form emails may not work.', error);
+          logger.warn('Please check your EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS, and EMAIL_FROM environment variables.');
+        });
+      } else {
+        logger.warn('Email configuration is missing. Contact form emails will not be sent.');
+        logger.warn('Please set EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS, EMAIL_FROM, and EMAIL_TO environment variables.');
+      }
 
       logger.info(messages.serverRunning(env.PORT));
       logger.info(`Environment: ${env.NODE_ENV}`);
