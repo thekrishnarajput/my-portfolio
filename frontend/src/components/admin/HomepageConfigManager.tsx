@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { homepageConfigAPI } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { IHomepageConfig } from '../../types/homepageConfig';
-import { FaSave, FaEdit, FaToggleOn, FaToggleOff, FaArrowUp, FaArrowDown, FaPlus, FaTrash, FaPalette } from 'react-icons/fa';
+import { FaSave, FaEdit, FaToggleOn, FaToggleOff, FaArrowUp, FaArrowDown, FaPlus, FaTrash, FaPalette, FaSpinner } from 'react-icons/fa';
 
 const HomepageConfigManager = () => {
   const [config, setConfig] = useState<IHomepageConfig | null>(null);
@@ -129,7 +129,8 @@ const HomepageConfigManager = () => {
             disabled={saving}
             className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FaSave /> {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? <FaSpinner className="animate-spin" /> : <FaSave />}
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>

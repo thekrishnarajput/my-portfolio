@@ -255,9 +255,10 @@ const TechStackInput: React.FC<TechStackInputProps> = ({
             type="button"
             onClick={handleCreateNew}
             disabled={isLoading}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
-            Add
+            {isLoading && <FaSpinner className="animate-spin" />}
+            {isLoading ? 'Adding...' : 'Add'}
           </button>
         )}
       </div>
