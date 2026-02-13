@@ -118,7 +118,7 @@ const Navbar = () => {
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 md:h-24 lg:h-28">
+        <div className="h-16 w-40 sm:h-20 sm:w-52 md:h-24 md:w-64 lg:h-28 lg:w-72 xl:h-32 xl:w-80 object-contain transition-opacity group-hover:opacity-90">
           {/* Logo with animation */}
           <Link to="/" className="flex items-center flex-shrink-0 group">
             <motion.div
