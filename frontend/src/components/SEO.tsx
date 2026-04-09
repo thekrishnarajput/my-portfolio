@@ -11,9 +11,9 @@ interface SEOProps {
   author?: string;
 }
 
-const defaultTitle = 'Mukesh Karn (Krishna) - Software Engineer Portfolio';
-const defaultDescription = 'Full-stack developer specializing in modern web technologies. Experienced in React, Node.js, TypeScript, and cloud technologies.';
-const defaultKeywords = 'software engineer, full-stack developer, portfolio, web development, React, Node.js, TypeScript, JavaScript, MongoDB, Express';
+const defaultTitle = 'Mukesh Karn (Krishna) | Software Engineer';
+const defaultDescription = 'Mukesh Karn (Krishna) - The best software engineer and full-stack developer specializing in modern web technologies. Experienced in React, Node.js, TypeScript, and cloud architecture.';
+const defaultKeywords = 'Mukesh, Mukesh Karn, Mukesh Karn Krishna, Software Engineer, Best software engineer, full-stack developer, portfolio, web development, React, Node.js, TypeScript, JavaScript, MongoDB, Express';
 const siteUrl = 'https://mukeshkarn.com';
 const defaultImage = `${siteUrl}/logo.png`;
 const defaultAuthor = 'Mukesh Karn (Krishna)';
@@ -118,6 +118,18 @@ const SEO: React.FC<SEOProps> = ({
     ],
   };
 
+  const sitelinksStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: [
+      { '@type': 'SiteNavigationElement', position: 1, name: 'About', url: `${siteUrl}/#about` },
+      { '@type': 'SiteNavigationElement', position: 2, name: 'Projects', url: `${siteUrl}/#projects` },
+      { '@type': 'SiteNavigationElement', position: 3, name: 'Experience', url: `${siteUrl}/#experience` },
+      { '@type': 'SiteNavigationElement', position: 4, name: 'Skills', url: `${siteUrl}/#skills` },
+      { '@type': 'SiteNavigationElement', position: 5, name: 'Contact', url: `${siteUrl}/#contact` }
+    ]
+  };
+
   return (
     <Helmet>
       {/* Primary Meta Tags */}
@@ -185,6 +197,9 @@ const SEO: React.FC<SEOProps> = ({
       </script>
       <script type="application/ld+json">
         {JSON.stringify(breadcrumbStructuredData)}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify(sitelinksStructuredData)}
       </script>
     </Helmet>
   );

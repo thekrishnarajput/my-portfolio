@@ -26,7 +26,7 @@ function AppContent() {
             : undefined
         }
       />
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col w-full max-w-[100vw] overflow-x-hidden">
         <ScrollToTop />
         <Navbar />
         <main className="flex-grow">
