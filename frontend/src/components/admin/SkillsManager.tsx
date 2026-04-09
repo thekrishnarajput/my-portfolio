@@ -86,6 +86,32 @@ const SkillsManager = () => {
     setEditingSkill(null);
   };
 
+  const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/') && !file.name.endsWith('.svg')) {
+      alert('Please select an image file (PNG, JPG, SVG)');
+      return;
+    }
+
+    if (file.size > 1024 * 1024) { // 1MB limit for icons
+      alert('Image size must be less than 1MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData({ ...formData, icon: reader.result as string });
+    };
+    reader.onerror = () => {
+      alert('Error reading file');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -235,8 +261,8 @@ const SkillsManager = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
-            <div className="p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                   {editingSkill ? 'Edit Skill' : 'Add Skill'}
@@ -298,14 +324,53 @@ const SkillsManager = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Icon URL (optional)
+                    Icon (optional)
                   </label>
-                  <input
-                    type="url"
-                    value={formData.icon}
-                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
+                  <div className="space-y-3">
+                    <input
+                      type="file"
+                      accept="image/*,.svg"
+                      onChange={handleIconUpload}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/30 dark:file:text-primary-300"
+                    />
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Upload an icon file (PNG, JPG, SVG) from your computer. Max size: 1MB
+                    </div>
+                    {formData.icon && (
+                      <div className="mt-3">
+                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</div>
+                        <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700 inline-block">
+                          <img
+                            src={formData.icon}
+                            alt="Icon preview"
+                            className="h-16 w-16 object-contain"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, icon: '' })}
+                          className="block mt-2 text-sm text-red-600 dark:text-red-400 hover:underline"
+                        >
+                          Remove Icon
+                        </button>
+                      </div>
+                    )}
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Or enter Icon URL
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.icon && !formData.icon.startsWith('data:') ? formData.icon : ''}
+                        onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        placeholder="https://example.com/icon.png"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div>
