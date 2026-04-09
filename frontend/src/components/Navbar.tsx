@@ -129,7 +129,7 @@ const Navbar = () => {
               <img
                 src={logoUrl}
                 alt="Logo"
-                className="h-14 w-32 sm:h-16 sm:w-40 md:h-20 md:w-52 lg:h-24 lg:w-64 xl:h-28 xl:w-72 object-contain transition-opacity group-hover:opacity-90"
+                className="h-40 w-auto sm:h-48 md:h-56 lg:h-72 xl:h-80 object-contain transition-opacity group-hover:opacity-90"
                 onError={(e) => {
                   // Fallback to default logo if configured logo fails to load
                   if (logoUrl !== '/logo.png') {
