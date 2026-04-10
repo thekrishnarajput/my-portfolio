@@ -37,6 +37,16 @@ const Contact = ({ config }: ContactProps) => {
     fetchLinkedInFollowers();
   }, []);
 
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
+    if (status === 'success' || status === 'error') {
+      timeout = setTimeout(() => {
+        setStatus('idle');
+      }, 10000);
+    }
+    return () => clearTimeout(timeout);
+  }, [status]);
+
   const fetchLinkedInFollowers = async () => {
     try {
       const response = await linkedinAPI.getFollowers();
