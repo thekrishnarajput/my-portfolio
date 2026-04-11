@@ -11,21 +11,22 @@ export class TechStackRepository {
     return TechStack.find(query)
       .sort({ name: 1 })
       .limit(20) // Limit results for performance
-      .exec();
+      .lean()
+      .exec() as unknown as Promise<ITechStack[]>;
   }
 
   /**
    * Find tech stack by ID
    */
   async findById(id: string): Promise<ITechStack | null> {
-    return TechStack.findById(id).exec();
+    return TechStack.findById(id).lean().exec() as unknown as Promise<ITechStack | null>;
   }
 
   /**
    * Find tech stack by name (case-insensitive)
    */
   async findByName(name: string): Promise<ITechStack | null> {
-    return TechStack.findOne({ name: name.toLowerCase() }).exec();
+    return TechStack.findOne({ name: name.toLowerCase() }).lean().exec() as unknown as Promise<ITechStack | null>;
   }
 
   /**

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { projectsAPI } from '../../services/api';
+import { projectsAPI, uploadAPI } from '../../services/api';
 import { FaPlus, FaEdit, FaTrash, FaTimes, FaInfoCircle, FaSpinner } from 'react-icons/fa';
 import { useToast } from '../../hooks/useToast';
 import TechStackInput from './TechStackInput';
@@ -91,6 +91,35 @@ const ProjectsManager = () => {
       ...formData,
       techStack,
     });
+  };
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, WebP, etc.)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const response = await uploadAPI.uploadFile(file);
+      const fullUrl = uploadAPI.getFileUrl(response.data.data.url);
+      setFormData({ ...formData, imageUrl: fullUrl });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -326,14 +355,55 @@ const ProjectsManager = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Image URL
+                    Project Image
                   </label>
-                  <input
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
+                  <div className="space-y-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingImage}
+                      onChange={handleImageUpload}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/30 dark:file:text-primary-300"
+                    />
+                    {uploadingImage && <p className="text-sm text-primary-600">Uploading...</p>}
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Upload an image (PNG, JPG, WebP). Max size: 5MB
+                    </div>
+
+                    {formData.imageUrl && (
+                      <div className="mt-2">
+                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</div>
+                        <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-gray-50 dark:bg-gray-700 inline-block">
+                          <img
+                            src={formData.imageUrl}
+                            alt="Project preview"
+                            className="max-h-40 max-w-full object-contain rounded"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                          className="block mt-2 text-sm text-red-600 dark:text-red-400 hover:underline"
+                        >
+                          Remove Image
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="mt-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Or enter Image URL
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.imageUrl || ''}
+                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        placeholder="https://example.com/project-image.png"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-end gap-6">

@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 
 // Import configuration
 import { setupSwagger } from './config/swagger';
@@ -22,6 +23,7 @@ import projectRoutes from './routes/projects';
 import skillRoutes from './routes/skills';
 import contactRoutes from './routes/contact';
 import authRoutes from './routes/auth';
+import uploadRoutes from './routes/upload';
 import linkedinRoutes from './routes/linkedin';
 import visitorRoutes from './routes/visitors';
 import techStackRoutes from './routes/techStacks';
@@ -38,6 +40,15 @@ const healthController = new HealthController();
 // Trust only 1 proxy (usually the first in the chain)
 app.set('trust proxy', 1);
 
+// Serve static uploaded files BEFORE Helmet so that Helmet's default
+// Cross-Origin-Resource-Policy: same-origin header does NOT apply to them.
+// Without this, browsers block cross-origin image loads with ERR_BLOCKED_BY_RESPONSE.NotSameOrigin.
+app.use('/uploads', (_req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+}, express.static(path.join(process.cwd(), 'public/uploads')));
+
 // Security middleware
 app.use(helmet());
 app.use(compression());
@@ -45,7 +56,7 @@ app.use(compression());
 // CORS configuration
 app.use(
   cors({
-    origin: ['http://localhost:3000', env.FRONTEND_URL],
+    origin: ['http://localhost:3000', 'http://localhost:3001', env.FRONTEND_URL],
     credentials: true,
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -61,8 +72,8 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // Use morgan logger for logging HTTP request with customized format
 app.use(morganLogger());
@@ -88,6 +99,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/skills', skillRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 app.use('/api/visitors', visitorRoutes);
 app.use('/api/tech-stacks', techStackRoutes);

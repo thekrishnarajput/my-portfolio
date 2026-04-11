@@ -2,6 +2,10 @@ import { HomepageConfigRepository } from '../repositories/homepageConfigReposito
 import { IHomepageConfig, HomepageSections } from '../models/homepageConfig';
 import { AppError } from '../errors/appError';
 import { HTTP_STATUS } from '../constants';
+import NodeCache from 'node-cache';
+
+const configCache = new NodeCache({ stdTTL: 3600 }); // 1 hour cache
+const ACTIVE_CONFIG_KEY = 'activeHomepageConfig';
 
 export class HomepageConfigService {
     private homepageConfigRepository: HomepageConfigRepository;
@@ -11,11 +15,19 @@ export class HomepageConfigService {
     }
 
     async getActiveConfig(): Promise<IHomepageConfig> {
-        let config = await this.homepageConfigRepository.findActive();
+        let config = configCache.get<IHomepageConfig>(ACTIVE_CONFIG_KEY);
 
-        // If no active config exists, create default one
         if (!config) {
-            config = await this.createDefaultConfig();
+            config = await this.homepageConfigRepository.findActive() as unknown as IHomepageConfig;
+
+            // If no active config exists, create default one
+            if (!config) {
+                config = await this.createDefaultConfig();
+            }
+
+            if (config) {
+                configCache.set(ACTIVE_CONFIG_KEY, config);
+            }
         }
 
         return config;
@@ -60,6 +72,12 @@ export class HomepageConfigService {
         if (!updatedConfig) {
             throw new AppError('Homepage configuration not found', HTTP_STATUS.NOT_FOUND);
         }
+
+        // Invalidate cache if it might affect active config
+        if (data.isActive || updatedConfig.isActive) {
+            configCache.del(ACTIVE_CONFIG_KEY);
+        }
+
         return updatedConfig;
     }
 
@@ -90,6 +108,9 @@ export class HomepageConfigService {
         if (!updatedConfig) {
             throw new AppError('Failed to set active configuration', HTTP_STATUS.INTERNAL_SERVER_ERROR);
         }
+
+        configCache.del(ACTIVE_CONFIG_KEY);
+
         return updatedConfig;
     }
 

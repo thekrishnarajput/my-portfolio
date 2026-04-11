@@ -19,11 +19,19 @@ export const useRecaptcha = () => useContext(RecaptchaContext);
 export const RecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [executeRecaptcha, setExecuteRecaptcha] = useState<((action: string) => Promise<string>) | undefined>(undefined);
   const [recaptchaError, setRecaptchaError] = useState<string | undefined>(undefined);
+  const isDisabled = import.meta.env.VITE_DISABLE_RECAPTCHA === 'true';
   // Using explicit fallback for the public key in case the deployment environment fails to inject it.
   // ReCAPTCHA v3 site keys are designed to be public and exposed to the client browser anyway.
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LenX7AsAAAAAD6GLHX_K-fhl29FnIUm_jS-0zdv';
 
   useEffect(() => {
+    // If reCAPTCHA is disabled (e.g. local dev), skip loading script and return a bypass token
+    if (isDisabled) {
+      console.warn('[reCAPTCHA] Disabled via VITE_DISABLE_RECAPTCHA. Returning bypass token.');
+      setExecuteRecaptcha(() => async (_action: string) => 'RECAPTCHA_DISABLED_BYPASS_TOKEN');
+      return;
+    }
+
     if (!siteKey) {
       console.warn('reCAPTCHA site key is missing!');
       setRecaptchaError('Site verification key missing.');
@@ -85,7 +93,7 @@ export const RecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         delete (window as any).onRecaptchaLoad;
       }
     };
-  }, [siteKey]);
+  }, [siteKey, isDisabled]);
 
   return (
     <RecaptchaContext.Provider value={{ executeRecaptcha, recaptchaError }}>

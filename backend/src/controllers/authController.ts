@@ -16,9 +16,11 @@ export class AuthController {
     login = asyncHandler(async (req: Request, res: Response): Promise<void> => {
         const { email, password, recaptchaToken } = req.body;
         
-        const isHuman = await verifyRecaptcha(recaptchaToken);
-        if (!isHuman) {
-            throw new ValidationError('reCAPTCHA verification failed. Please try again.');
+        if (process.env.DISABLE_RECAPTCHA !== 'true') {
+            const isHuman = await verifyRecaptcha(recaptchaToken);
+            if (!isHuman) {
+                throw new ValidationError('reCAPTCHA verification failed. Please try again.');
+            }
         }
 
         const result = await this.authService.login(email, password);

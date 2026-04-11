@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { homepageConfigAPI } from '../../services/api';
+import { homepageConfigAPI, uploadAPI } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { IHomepageConfig } from '../../types/homepageConfig';
 import { FaSave, FaEdit, FaToggleOn, FaToggleOff, FaArrowUp, FaArrowDown, FaPlus, FaTrash, FaPalette, FaSpinner } from 'react-icons/fa';
@@ -989,32 +989,37 @@ const ContactEditor = ({ config, onChange }: { config: any; onChange: (data: any
 };
 
 const BrandingEditor = ({ config, onChange }: { config: any; onChange: (data: any) => void }) => {
-  const handleImageUpload = (type: 'logo' | 'favicon', file: File | null) => {
+  const [uploadingImage, setUploadingImage] = useState<{ logo: boolean; favicon: boolean }>({ logo: false, favicon: false });
+
+  const handleImageUpload = async (type: 'logo' | 'favicon', file: File | null) => {
     if (!file) {
       onChange({ ...config, [type]: '' });
       return;
     }
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith('image/') && !file.name.endsWith('.svg')) {
       alert('Please select an image file');
       return;
     }
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Image size must be less than 2MB');
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      onChange({ ...config, [type]: reader.result as string });
-    };
-    reader.onerror = () => {
-      alert('Error reading file');
-    };
-    reader.readAsDataURL(file);
+    setUploadingImage({ ...uploadingImage, [type]: true });
+    try {
+      const response = await uploadAPI.uploadFile(file);
+      const fullUrl = uploadAPI.getFileUrl(response.data.data.url);
+      onChange({ ...config, [type]: fullUrl });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Error uploading file. Please try again.');
+    } finally {
+      setUploadingImage({ ...uploadingImage, [type]: false });
+    }
   };
 
   return (
@@ -1028,11 +1033,13 @@ const BrandingEditor = ({ config, onChange }: { config: any; onChange: (data: an
           <input
             type="file"
             accept="image/*"
+            disabled={uploadingImage.logo}
             onChange={(e) => handleImageUpload('logo', e.target.files?.[0] || null)}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/30 dark:file:text-primary-300"
           />
+          {uploadingImage.logo && <p className="text-sm text-primary-600">Uploading...</p>}
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            Upload an image file (PNG, JPG, SVG) or enter a URL. Max size: 2MB
+            Upload an image file (PNG, JPG, SVG) or enter a URL. Max size: 5MB
           </div>
           {config.logo && (
             <div className="mt-3">
@@ -1084,11 +1091,13 @@ const BrandingEditor = ({ config, onChange }: { config: any; onChange: (data: an
           <input
             type="file"
             accept="image/*"
+            disabled={uploadingImage.favicon}
             onChange={(e) => handleImageUpload('favicon', e.target.files?.[0] || null)}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/30 dark:file:text-primary-300"
           />
+          {uploadingImage.favicon && <p className="text-sm text-primary-600">Uploading...</p>}
           <div className="text-xs text-gray-500 dark:text-gray-400">
-            Upload a favicon (ICO, PNG) - Recommended size: 32x32 or 16x16. Max size: 2MB
+            Upload a favicon (ICO, PNG) - Recommended size: 32x32 or 16x16. Max size: 5MB
           </div>
           {config.favicon && (
             <div className="mt-3">

@@ -1,6 +1,10 @@
 import { VisitorRepository } from '../repositories/visitorRepository';
 // import { IVisitor } from '../models/visitor';
 import crypto from 'crypto';
+import NodeCache from 'node-cache';
+
+const visitorCache = new NodeCache({ stdTTL: 600 }); // 10 minutes cache
+const CACHE_KEY = 'visitorCounts';
 
 export class VisitorService {
   private visitorRepository: VisitorRepository;
@@ -69,16 +73,35 @@ export class VisitorService {
       }
     }
 
-    // Get both counts
-    const [uniqueVisitors, totalVisits] = await Promise.all([
-      this.visitorRepository.getUniqueVisitorCount(),
-      this.visitorRepository.getTotalVisitsCount(),
-    ]);
+    // Get counts from cache or DB
+    let counts = visitorCache.get<{ uniqueVisitors: number; totalVisits: number }>(CACHE_KEY);
+    if (!counts) {
+      const [unique, total] = await Promise.all([
+        this.visitorRepository.getUniqueVisitorCount(),
+        this.visitorRepository.getTotalVisitsCount(),
+      ]);
+      counts = { uniqueVisitors: unique, totalVisits: total };
+      visitorCache.set(CACHE_KEY, counts);
+    } else {
+      // Increment cache if memory is already set, preventing DB hit
+      if (isNewVisitor) {
+        counts.uniqueVisitors += 1;
+        counts.totalVisits += 1;
+        visitorCache.set(CACHE_KEY, counts);
+      } else if (visitor) {
+        const timeSinceLastVisit = Date.now() - visitor.lastVisit.getTime();
+        const oneHour = 60 * 60 * 1000;
+        if (timeSinceLastVisit > oneHour) {
+          counts.totalVisits += 1;
+          visitorCache.set(CACHE_KEY, counts);
+        }
+      }
+    }
 
     return {
       isNewVisitor,
-      uniqueVisitors,
-      totalVisits,
+      uniqueVisitors: counts.uniqueVisitors,
+      totalVisits: counts.totalVisits,
     };
   }
 
@@ -86,15 +109,18 @@ export class VisitorService {
    * Get visitor counts (unique visitors and total visits)
    */
   async getVisitorCounts(): Promise<{ uniqueVisitors: number; totalVisits: number }> {
-    const [uniqueVisitors, totalVisits] = await Promise.all([
-      this.visitorRepository.getUniqueVisitorCount(),
-      this.visitorRepository.getTotalVisitsCount(),
-    ]);
+    let counts = visitorCache.get<{ uniqueVisitors: number; totalVisits: number }>(CACHE_KEY);
+    
+    if (!counts) {
+      const [unique, total] = await Promise.all([
+        this.visitorRepository.getUniqueVisitorCount(),
+        this.visitorRepository.getTotalVisitsCount(),
+      ]);
+      counts = { uniqueVisitors: unique, totalVisits: total };
+      visitorCache.set(CACHE_KEY, counts);
+    }
 
-    return {
-      uniqueVisitors,
-      totalVisits,
-    };
+    return counts;
   }
 
   /**
