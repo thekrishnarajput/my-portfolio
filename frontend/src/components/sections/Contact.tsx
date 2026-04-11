@@ -29,7 +29,7 @@ const Contact = ({ config }: ContactProps) => {
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [linkedinFollowers, setLinkedinFollowers] = useState<number | null>(null);
   const { showFromResponse, showError } = useToast();
-  const { executeRecaptcha } = useRecaptcha();
+  const { executeRecaptcha, recaptchaError } = useRecaptcha();
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
@@ -217,7 +217,7 @@ const Contact = ({ config }: ContactProps) => {
                 disabled={loading || !executeRecaptcha}
                 className="w-full px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Sending...' : (!executeRecaptcha ? 'Loading ReCAPTCHA...' : 'Send Message')}
+                {loading ? 'Sending...' : (!executeRecaptcha ? (recaptchaError || 'Loading ReCAPTCHA...') : 'Send Message')}
               </button>
             </form>
           </motion.div>
