@@ -12,10 +12,24 @@ export const verifyRecaptcha = async (token: string | undefined): Promise<boolea
     }
 
     try {
-        const response = await axios.post(
-            `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${token}`
-        );
-        return response.data.success && response.data.score >= 0.5;
+        const url = 'https://www.google.com/recaptcha/api/siteverify';
+        const data = new URLSearchParams({
+            secret: secretKey,
+            response: token,
+        });
+
+        const response = await axios.post(url, data.toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        });
+
+        if (!response.data.success || response.data.score < 0.5) {
+            console.warn('reCAPTCHA validation failed or score too low:', response.data);
+            return false;
+        }
+
+        return true;
     } catch (error) {
         console.error('Error verifying reCAPTCHA:', error);
         return false;

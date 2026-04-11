@@ -9,7 +9,7 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
-  const { executeRecaptcha } = useRecaptcha();
+  const { executeRecaptcha, recaptchaError } = useRecaptcha();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +102,7 @@ const AdminLogin = () => {
             disabled={loading || !executeRecaptcha}
             className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Signing in...' : (!executeRecaptcha ? 'Loading ReCAPTCHA...' : 'Sign In')}
+            {loading ? 'Signing in...' : (!executeRecaptcha ? (recaptchaError || 'Loading ReCAPTCHA...') : 'Sign In')}
           </button>
         </form>
       </div>

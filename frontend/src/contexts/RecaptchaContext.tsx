@@ -9,6 +9,7 @@ declare global {
 
 interface RecaptchaContextType {
   executeRecaptcha?: (action: string) => Promise<string>;
+  recaptchaError?: string;
 }
 
 const RecaptchaContext = createContext<RecaptchaContextType>({});
@@ -17,11 +18,13 @@ export const useRecaptcha = () => useContext(RecaptchaContext);
 
 export const RecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [executeRecaptcha, setExecuteRecaptcha] = useState<((action: string) => Promise<string>) | undefined>(undefined);
+  const [recaptchaError, setRecaptchaError] = useState<string | undefined>(undefined);
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
 
   useEffect(() => {
     if (!siteKey) {
       console.warn('reCAPTCHA site key is missing!');
+      setRecaptchaError('Site verification key missing.');
       return;
     }
 
@@ -49,17 +52,32 @@ export const RecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const script = document.createElement('script');
     script.id = 'recaptcha-script';
+    // Using both onload and a fallback interval to ensure it initializes regardless of Google script behavior
     script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}&onload=onRecaptchaLoad`;
     script.async = true;
     script.defer = true;
     
+    script.onerror = () => {
+      console.error('Network error or AdBlocker prevented ReCAPTCHA from loading.');
+      setRecaptchaError('Script blocked or failed to load.');
+    };
+
     window.onRecaptchaLoad = () => {
       initRecaptcha();
     };
     
     document.body.appendChild(script);
 
+    // Fallback polling just in case onload doesn't trigger (known ReCAPTCHA quirk)
+    const interval = setInterval(() => {
+      if (window.grecaptcha && window.grecaptcha.ready) {
+        initRecaptcha();
+        clearInterval(interval);
+      }
+    }, 500);
+
     return () => {
+      clearInterval(interval);
       if (document.getElementById('recaptcha-script')) {
         document.body.removeChild(script);
         delete (window as any).onRecaptchaLoad;
@@ -68,7 +86,7 @@ export const RecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [siteKey]);
 
   return (
-    <RecaptchaContext.Provider value={{ executeRecaptcha }}>
+    <RecaptchaContext.Provider value={{ executeRecaptcha, recaptchaError }}>
       {children}
     </RecaptchaContext.Provider>
   );
