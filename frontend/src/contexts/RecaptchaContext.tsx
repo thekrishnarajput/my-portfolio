@@ -19,7 +19,9 @@ export const useRecaptcha = () => useContext(RecaptchaContext);
 export const RecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [executeRecaptcha, setExecuteRecaptcha] = useState<((action: string) => Promise<string>) | undefined>(undefined);
   const [recaptchaError, setRecaptchaError] = useState<string | undefined>(undefined);
-  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
+  // Using explicit fallback for the public key in case the deployment environment fails to inject it.
+  // ReCAPTCHA v3 site keys are designed to be public and exposed to the client browser anyway.
+  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LenX7AsAAAAAD6GLHX_K-fhl29FnIUm_jS-0zdv';
 
   useEffect(() => {
     if (!siteKey) {
