@@ -4,7 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import { FaLinkedin, FaEnvelope, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { contactAPI, linkedinAPI } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { useRecaptcha } from '../../contexts/RecaptchaContext';
 
 interface ContactProps {
   config?: {
@@ -29,7 +29,7 @@ const Contact = ({ config }: ContactProps) => {
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [linkedinFollowers, setLinkedinFollowers] = useState<number | null>(null);
   const { showFromResponse, showError } = useToast();
-  const { executeRecaptcha } = useGoogleReCaptcha();
+  const { executeRecaptcha } = useRecaptcha();
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
@@ -73,7 +73,7 @@ const Contact = ({ config }: ContactProps) => {
     setStatus('idle');
 
     if (!executeRecaptcha) {
-      showError({ response: { data: { message: 'ReCAPTCHA has not been initialized yet' } } });
+      showError({ response: { data: { message: 'ReCAPTCHA is still loading. Please try again in a moment.' } } });
       setStatus('error');
       setLoading(false);
       return;
@@ -214,10 +214,10 @@ const Contact = ({ config }: ContactProps) => {
               )}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !executeRecaptcha}
                 className="w-full px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Sending...' : 'Send Message'}
+                {loading ? 'Sending...' : (!executeRecaptcha ? 'Loading ReCAPTCHA...' : 'Send Message')}
               </button>
             </form>
           </motion.div>

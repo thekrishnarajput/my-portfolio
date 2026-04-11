@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { FaLock, FaEnvelope } from 'react-icons/fa';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { useRecaptcha } from '../../contexts/RecaptchaContext';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -9,7 +9,7 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
-  const { executeRecaptcha } = useGoogleReCaptcha();
+  const { executeRecaptcha } = useRecaptcha();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +17,7 @@ const AdminLogin = () => {
     setError('');
 
     if (!executeRecaptcha) {
-      setError('ReCAPTCHA has not been initialized yet');
+      setError('ReCAPTCHA is still loading. Please try again in a moment.');
       setLoading(false);
       return;
     }
@@ -99,10 +99,10 @@ const AdminLogin = () => {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !executeRecaptcha}
             className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Signing in...' : (!executeRecaptcha ? 'Loading ReCAPTCHA...' : 'Sign In')}
           </button>
         </form>
       </div>
