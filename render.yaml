@@ -1,46 +1,62 @@
 services:
-  # Backend API Service
+  # Backend API Service (Docker)
   - type: web
     name: portfolio-backend
-    env: node
-    plan: starter # Change to 'standard' or 'pro' for production
-    region: oregon # Change to your preferred region
-    buildCommand: cd backend && npm install && npm run build
-    startCommand: cd backend && npm run start:prod
+    runtime: docker           # Use Docker build via Dockerfile
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter             # Upgrade to 'standard' for persistent disk support
+    region: oregon            # Change to your preferred region
+    # Render injects PORT automatically; the app reads process.env.PORT
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 5000
       - key: MONGODB_URI
-        sync: false # Set this in Render dashboard
+        sync: false           # Set in Render dashboard
       - key: JWT_SECRET
-        sync: false # Set this in Render dashboard
+        sync: false           # Set in Render dashboard
       - key: JWT_EXPIRE
         value: 7d
       - key: FRONTEND_URL
-        sync: false # Will be set after frontend deployment
+        sync: false           # Set after frontend deployment
       - key: EMAIL_HOST
-        sync: false # Optional - set if using email
+        sync: false
       - key: EMAIL_PORT
-        value: 587
+        value: "587"
       - key: EMAIL_USER
-        sync: false # Optional - set if using email
+        sync: false
       - key: EMAIL_PASS
-        sync: false # Optional - set if using email
+        sync: false
       - key: EMAIL_FROM
-        sync: false # Optional - set if using email
+        sync: false
+      - key: EMAIL_TO
+        sync: false
       - key: RATE_LIMIT_WINDOW_MS
-        value: 900000
+        value: "900000"
       - key: RATE_LIMIT_MAX_REQUESTS
-        value: 100
+        value: "100"
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false           # Set in Render dashboard
+      - key: DISABLE_RECAPTCHA
+        value: "false"        # Always enforce reCAPTCHA in production
+    # Persistent Disk: keeps uploaded files across redeploys and restarts.
+    # NOTE: Persistent disks require a paid plan (Standard or above).
+    # If on free tier, files will be lost on each deploy — consider Cloudinary instead.
+    disk:
+      name: portfolio-uploads
+      mountPath: /app/public/uploads
+      sizeGB: 1               # Increase as needed
 
-  # Frontend Static Site
+  # Frontend Static Site (no Docker needed — Render serves Vite output directly)
   - type: static
     name: portfolio-frontend
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
     envVars:
       - key: VITE_API_URL
-        sync: false # Will be set to backend URL after deployment
+        sync: false           # Set to your backend URL, e.g. https://portfolio-backend.onrender.com/api
+      - key: VITE_RECAPTCHA_SITE_KEY
+        sync: false
+      - key: VITE_DISABLE_RECAPTCHA
+        value: "false"        # Always enforce reCAPTCHA in production
 

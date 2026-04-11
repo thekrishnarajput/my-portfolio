@@ -32,9 +32,10 @@ services:
     # All variables defined in backend/.env will be available in the container
     env_file:
       - ./backend/.env
-    # Optional: Override specific variables for Docker if needed
-    # environment:
-    #   MONGODB_URI: mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password}@mongodb:27017/${MONGO_DATABASE:-portfolio}?authSource=admin
+    volumes:
+      # Named volume for persistent file uploads across container restarts & rebuilds.
+      # Without this, all uploaded images are lost when the container is recreated.
+      - uploads_data:/app/public/uploads
     depends_on:
       mongodb:
         condition: service_healthy
@@ -75,5 +76,9 @@ networks:
 
 volumes:
   mongodb_data:
+    driver: local
+  # Persistent storage for Multer-uploaded files.
+  # Files survive container restarts, rebuilds, and redeployments.
+  uploads_data:
     driver: local
 
