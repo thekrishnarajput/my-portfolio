@@ -2,15 +2,15 @@ import HomepageConfig, { IHomepageConfig } from '../models/homepageConfig';
 
 export class HomepageConfigRepository {
   async findActive(): Promise<IHomepageConfig | null> {
-    return HomepageConfig.findOne({ isActive: true }).exec();
+    return HomepageConfig.findOne({ isActive: true }).lean().exec() as unknown as IHomepageConfig | null;
   }
 
   async findById(id: string): Promise<IHomepageConfig | null> {
-    return HomepageConfig.findById(id).exec();
+    return HomepageConfig.findById(id).lean().exec() as unknown as IHomepageConfig | null;
   }
 
   async findAll(): Promise<IHomepageConfig[]> {
-    return HomepageConfig.find().sort({ createdAt: -1 }).exec();
+    return HomepageConfig.find().sort({ createdAt: -1 }).lean().exec() as unknown as IHomepageConfig[];
   }
 
   async create(data: Partial<IHomepageConfig>): Promise<IHomepageConfig> {

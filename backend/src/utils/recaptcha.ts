@@ -1,6 +1,12 @@
 import axios from 'axios';
 
 export const verifyRecaptcha = async (token: string | undefined): Promise<boolean> => {
+    // Allow bypassing reCAPTCHA in local development via env flag
+    if (process.env.DISABLE_RECAPTCHA === 'true') {
+        console.warn('[reCAPTCHA] Verification disabled via DISABLE_RECAPTCHA env flag.');
+        return true;
+    }
+
     if (!token) {
         return false;
     }

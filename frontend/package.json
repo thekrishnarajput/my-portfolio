@@ -27,6 +27,7 @@
     "three": "^0.160.1"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@types/three": "^0.160.0",
@@ -34,6 +35,7 @@
     "@typescript-eslint/parser": "^6.17.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
+    "baseline-browser-mapping": "^2.10.18",
     "eslint": "^8.56.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",

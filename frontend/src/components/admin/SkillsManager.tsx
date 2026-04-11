@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { skillsAPI } from '../../services/api';
+import { skillsAPI, uploadAPI } from '../../services/api';
 import { FaPlus, FaEdit, FaTrash, FaTimes, FaInfoCircle, FaSpinner } from 'react-icons/fa';
 import { useToast } from '../../hooks/useToast';
 
@@ -86,7 +86,9 @@ const SkillsManager = () => {
     setEditingSkill(null);
   };
 
-  const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [uploadingIcon, setUploadingIcon] = useState(false);
+
+  const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
       return;
@@ -97,19 +99,22 @@ const SkillsManager = () => {
       return;
     }
 
-    if (file.size > 1024 * 1024) { // 1MB limit for icons
-      alert('Image size must be less than 1MB');
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit for icons
+      alert('Image size must be less than 5MB');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData({ ...formData, icon: reader.result as string });
-    };
-    reader.onerror = () => {
-      alert('Error reading file');
-    };
-    reader.readAsDataURL(file);
+    setUploadingIcon(true);
+    try {
+      const response = await uploadAPI.uploadFile(file);
+      const fullUrl = uploadAPI.getFileUrl(response.data.data.url);
+      setFormData({ ...formData, icon: fullUrl });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Error uploading file. Please try again.');
+    } finally {
+      setUploadingIcon(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -330,11 +335,13 @@ const SkillsManager = () => {
                     <input
                       type="file"
                       accept="image/*,.svg"
+                      disabled={uploadingIcon}
                       onChange={handleIconUpload}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/30 dark:file:text-primary-300"
                     />
+                    {uploadingIcon && <p className="text-sm text-primary-600">Uploading...</p>}
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Upload an icon file (PNG, JPG, SVG) from your computer. Max size: 1MB
+                      Upload an icon file (PNG, JPG, SVG) from your computer. Max size: 5MB
                     </div>
                     {formData.icon && (
                       <div className="mt-3">
@@ -364,7 +371,7 @@ const SkillsManager = () => {
                       </label>
                       <input
                         type="url"
-                        value={formData.icon && !formData.icon.startsWith('data:') ? formData.icon : ''}
+                        value={formData.icon || ''}
                         onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         placeholder="https://example.com/icon.png"

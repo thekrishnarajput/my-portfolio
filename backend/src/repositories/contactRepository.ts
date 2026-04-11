@@ -7,11 +7,11 @@ export class ContactRepository {
     }
 
     async findAll(): Promise<IContactMessage[]> {
-        return ContactMessage.find().sort({ createdAt: -1 }).exec();
+        return ContactMessage.find().sort({ createdAt: -1 }).lean().exec() as unknown as IContactMessage[];
     }
 
     async findById(id: string): Promise<IContactMessage | null> {
-        return ContactMessage.findById(id).exec();
+        return ContactMessage.findById(id).lean().exec() as unknown as IContactMessage | null;
     }
 }
 

@@ -100,5 +100,26 @@ export const homepageConfigAPI = {
   activate: (id: string) => api.post(`/homepage-config/${id}/activate`),
 };
 
+export const uploadAPI = {
+  uploadFile: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  /**
+   * Converts a relative upload path (e.g. /uploads/foo.png) returned by the
+   * backend into an absolute URL pointing at the backend server so the browser
+   * can load the image across origins.
+   */
+  getFileUrl: (relativePath: string): string => {
+    const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
+    return `${base}${relativePath}`;
+  },
+};
+
 export default api;
 

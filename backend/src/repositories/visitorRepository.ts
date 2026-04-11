@@ -2,7 +2,7 @@ import Visitor, { IVisitor } from '../models/visitor';
 
 export class VisitorRepository {
   async findById(visitorId: string): Promise<IVisitor | null> {
-    return Visitor.findOne({ visitorId }).exec();
+    return Visitor.findOne({ visitorId }).lean().exec() as unknown as IVisitor | null;
   }
 
   async create(data: Partial<IVisitor>): Promise<IVisitor> {
@@ -55,7 +55,8 @@ export class VisitorRepository {
         .sort(sortObject)
         .skip(skip)
         .limit(limit)
-        .exec(),
+        .lean()
+        .exec() as unknown as IVisitor[],
       Visitor.countDocuments().exec(),
     ]);
     return { visitors, total };
