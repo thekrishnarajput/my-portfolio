@@ -4,6 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import { FaLinkedin, FaEnvelope, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { contactAPI, linkedinAPI } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 interface ContactProps {
   config?: {
@@ -28,6 +29,7 @@ const Contact = ({ config }: ContactProps) => {
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [linkedinFollowers, setLinkedinFollowers] = useState<number | null>(null);
   const { showFromResponse, showError } = useToast();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [ref, inView] = useInView({
     threshold: 0.1,
     triggerOnce: true,
@@ -70,8 +72,16 @@ const Contact = ({ config }: ContactProps) => {
     setLoading(true);
     setStatus('idle');
 
+    if (!executeRecaptcha) {
+      showError({ response: { data: { message: 'ReCAPTCHA has not been initialized yet' } } });
+      setStatus('error');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await contactAPI.send(formData);
+      const token = await executeRecaptcha('contact_form');
+      const response = await contactAPI.send({ ...formData, recaptchaToken: token });
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
       // Show toast from API response

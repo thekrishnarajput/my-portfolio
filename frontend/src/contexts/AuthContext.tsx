@@ -10,7 +10,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, recaptchaToken?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean;
@@ -45,14 +45,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, password: string) => {
-    const response = await authAPI.login(email, password);
+  const login = async (email: string, password: string, recaptchaToken?: string) => {
+    const response = await authAPI.login(email, password, recaptchaToken);
     // API response structure: { success: true, data: { token, user }, message }
-    const token = response.data.data.token;
-    const user = response.data.data.user;
-    setToken(token);
-    setUser(user);
-    localStorage.setItem('token', token);
+    const resToken = response.data.data.token;
+    const resUser = response.data.data.user;
+    setToken(resToken);
+    setUser(resUser);
+    localStorage.setItem('token', resToken);
   };
 
   const logout = () => {
