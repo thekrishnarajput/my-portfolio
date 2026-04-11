@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/authService';
 import { ResponseHelper } from '../utils/response';
-import { UnauthorizedError } from '../errors/appError';
+import { UnauthorizedError, ValidationError } from '../errors/appError';
 import { asyncHandler } from '../errors/errorHandler';
 import { messages } from '../utils/message';
+import { verifyRecaptcha } from '../utils/recaptcha';
 
 export class AuthController {
     private authService: AuthService;
@@ -13,7 +14,13 @@ export class AuthController {
     }
 
     login = asyncHandler(async (req: Request, res: Response): Promise<void> => {
-        const { email, password } = req.body;
+        const { email, password, recaptchaToken } = req.body;
+        
+        const isHuman = await verifyRecaptcha(recaptchaToken);
+        if (!isHuman) {
+            throw new ValidationError('reCAPTCHA verification failed. Please try again.');
+        }
+
         const result = await this.authService.login(email, password);
         ResponseHelper.success(res, result, messages.loginSuccess());
     });

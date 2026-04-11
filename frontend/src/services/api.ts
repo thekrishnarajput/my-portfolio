@@ -52,13 +52,13 @@ export const skillsAPI = {
 };
 
 export const contactAPI = {
-  send: (data: { name: string; email: string; subject: string; message: string }) =>
+  send: (data: { name: string; email: string; subject: string; message: string; recaptchaToken?: string }) =>
     api.post('/contact', data),
 };
 
 export const authAPI = {
-  login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
+  login: (email: string, password: string, recaptchaToken?: string) =>
+    api.post('/auth/login', { email, password, recaptchaToken }),
   verify: (token: string) =>
     api.post('/auth/verify', {}, { headers: { Authorization: `Bearer ${token}` } }),
 };

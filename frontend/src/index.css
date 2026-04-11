@@ -134,3 +134,16 @@
   width: 20px;
   height: 20px;
 }
+
+/* Force reCAPTCHA badge to the bottom left */
+.grecaptcha-badge {
+  width: 70px !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+  left: 4px !important;
+  right: auto !important;
+}
+
+.grecaptcha-badge:hover {
+  width: 256px !important;
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { FaLock, FaEnvelope } from 'react-icons/fa';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -8,14 +9,22 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
+    if (!executeRecaptcha) {
+      setError('ReCAPTCHA has not been initialized yet');
+      setLoading(false);
+      return;
+    }
+
     try {
-      await login(email, password);
+      const token = await executeRecaptcha('admin_login');
+      await login(email, password, token);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
