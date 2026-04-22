@@ -108,16 +108,38 @@ const Navbar = () => {
       const element = document.getElementById(id);
       if (element) {
         const navbarHeight = window.innerWidth < 768 ? 64 : 80; // h-16 (64px) on mobile, h-20 (80px) on desktop
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.scrollY - navbarHeight;
+        
+        const getAbsoluteTop = () => element.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        let lastOffset = getAbsoluteTop();
 
         window.scrollTo({
-          top: offsetPosition,
+          top: lastOffset,
           behavior: 'smooth'
         });
+
+        // Track the element for 3.5 seconds in case async sections above it (like Projects) load and push it down
+        let checks = 0;
+        const movementTracker = setInterval(() => {
+          checks++;
+          if (checks > 35) {
+            clearInterval(movementTracker);
+            return;
+          }
+          
+          const currentOffset = getAbsoluteTop();
+          // If the element's absolute document position shifted by more than 50px, re-adjust the scroll
+          if (Math.abs(currentOffset - lastOffset) > 50) {
+            lastOffset = currentOffset;
+            window.scrollTo({
+              top: currentOffset,
+              behavior: 'smooth'
+            });
+          }
+        }, 100);
+
       } else if (retries < maxRetries) {
         retries++;
-        setTimeout(attemptScroll, 100); // Check every 100ms, up to 4 seconds
+        setTimeout(attemptScroll, 100); // Check every 100ms
       }
     };
 
