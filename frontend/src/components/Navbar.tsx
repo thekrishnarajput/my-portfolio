@@ -12,12 +12,36 @@ const Navbar = () => {
   const [activeSection, setActiveSection] = useState('');
   const [pendingScroll, setPendingScroll] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
-  const { config: homepageConfig } = useHomepageConfig();
+  const { config: homepageConfig, loading: configLoading } = useHomepageConfig();
   const location = useLocation();
   const navigate = useNavigate();
 
   // Get logo from config or use default
   const logoUrl = homepageConfig?.branding?.logo || '/logo.png';
+
+  // Generate dynamic navLinks from homepageConfig
+  const navLinks = (homepageConfig?.order || ['hero', 'about', 'projects', 'skills', 'contact'])
+    .filter(sectionKey => {
+      // Keep section if it doesn't exist in config (fallback) or if it is explicitly enabled
+      const sectionConfig = homepageConfig?.sections?.[sectionKey as keyof typeof homepageConfig.sections];
+      return !sectionConfig || sectionConfig.enabled !== false;
+    })
+    .map(sectionKey => {
+      const isHero = sectionKey === 'hero';
+      const id = isHero ? 'home' : sectionKey;
+      const defaultNames: Record<string, string> = {
+        hero: 'Home',
+        about: 'About',
+        projects: 'Projects',
+        skills: 'Skills',
+        contact: 'Contact'
+      };
+      return {
+        name: defaultNames[sectionKey] || sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1),
+        href: `/#${id}`,
+        id
+      };
+    });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,15 +54,27 @@ const Navbar = () => {
           return;
         }
 
-        // Detect active section based on scroll position
-        const sections = ['home', 'about', 'projects', 'skills', 'contact'];
-        const scrollPosition = window.scrollY + 100;
+        // Detect active section based on scroll position using dynamic navLinks
+        const scrollPosition = window.scrollY + 150; // Offset for navbar
+        const sectionIds = navLinks.map(link => link.id);
+        
+        let currentSection = '';
 
-        for (let i = sections.length - 1; i >= 0; i--) {
-          const section = document.getElementById(sections[i]);
+        for (let i = sectionIds.length - 1; i >= 0; i--) {
+          const section = document.getElementById(sectionIds[i]);
           if (section && section.offsetTop <= scrollPosition) {
-            setActiveSection(sections[i]);
+            currentSection = sectionIds[i];
             break;
+          }
+        }
+
+        if (currentSection && currentSection !== activeSection) {
+          setActiveSection(currentSection);
+          // Update URL hash without causing a jump or adding to browser history
+          if (currentSection === 'home') {
+             window.history.replaceState(null, '', '/');
+          } else {
+             window.history.replaceState(null, '', `/#${currentSection}`);
           }
         }
       } catch (error) {
@@ -56,7 +92,7 @@ const Navbar = () => {
       clearTimeout(timeoutId);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [location.pathname]);
+  }, [location.pathname, navLinks, activeSection]);
 
   // Reset active section when route changes
   useEffect(() => {
@@ -65,45 +101,71 @@ const Navbar = () => {
     }
   }, [location]);
 
-  // Handle pending scroll after navigation
+  const scrollToSectionWithRetry = (id: string, maxRetries = 40) => {
+    let retries = 0;
+
+    const attemptScroll = () => {
+      const element = document.getElementById(id);
+      if (element) {
+        const navbarHeight = window.innerWidth < 768 ? 64 : 80; // h-16 (64px) on mobile, h-20 (80px) on desktop
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - navbarHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      } else if (retries < maxRetries) {
+        retries++;
+        setTimeout(attemptScroll, 100); // Check every 100ms, up to 4 seconds
+      }
+    };
+
+    attemptScroll();
+  };
+
+  // Scroll to hash on initial load or refresh
   useEffect(() => {
-    if (pendingScroll && location.pathname === '/') {
-      // Wait for DOM to be ready
+    if (location.pathname === '/' && location.hash && !configLoading) {
+      const id = location.hash.substring(1);
       const timeoutId = setTimeout(() => {
-        const element = document.getElementById(pendingScroll);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          setPendingScroll(null);
-        }
-      }, 150);
+        scrollToSectionWithRetry(id);
+      }, 100); // Tiny delay to allow DOM to render after loading finishes
       return () => clearTimeout(timeoutId);
     }
-  }, [location.pathname, pendingScroll]);
+  }, [location.pathname, location.hash, configLoading]);
 
-  const navLinks = [
-    { name: 'Home', href: '/#home', id: 'home' },
-    { name: 'About', href: '/#about', id: 'about' },
-    { name: 'Projects', href: '/#projects', id: 'projects' },
-    { name: 'Skills', href: '/#skills', id: 'skills' },
-    { name: 'Contact', href: '/#contact', id: 'contact' },
-  ];
+  // Handle pending scroll after navigation
+  useEffect(() => {
+    if (pendingScroll && location.pathname === '/' && !configLoading) {
+      const timeoutId = setTimeout(() => {
+        scrollToSectionWithRetry(pendingScroll);
+        setPendingScroll(null);
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [location.pathname, pendingScroll, configLoading]);
+
 
   const handleNavClick = (href: string) => {
-    setIsOpen(false);
     if (href.startsWith('/#')) {
       const id = href.substring(2);
 
-      // If we're not on the home page, navigate to home first and set pending scroll
       if (location.pathname !== '/') {
+        // Navigate to the homepage with the hash
+        navigate(href);
         setPendingScroll(id);
-        navigate('/');
+        setIsOpen(false);
       } else {
-        // We're already on home page, just scroll to section
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        // Update URL hash directly to bypass React Router's scroll-reset bug on same-page hash changes
+        window.history.pushState(null, '', href);
+        scrollToSectionWithRetry(id);
+        // Delay closing menu strictly to prevent scroll cancellation on mobile browsers
+        setTimeout(() => setIsOpen(false), 400);
       }
+    } else {
+      navigate(href);
+      setIsOpen(false);
     }
   };
 
