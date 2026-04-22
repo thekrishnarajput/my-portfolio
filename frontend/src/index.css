@@ -18,6 +18,8 @@
   
   html {
     scroll-behavior: smooth;
+    /* Offset for fixed navbar so hash navigation clears it */
+    scroll-padding-top: 80px;
   }
 }
 
