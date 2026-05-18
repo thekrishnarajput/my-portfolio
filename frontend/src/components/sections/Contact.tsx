@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect /*, useRef, useCallback */ } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { FaLinkedin, FaEnvelope, FaCheckCircle, FaExclamationCircle, FaPaperclip, FaTimes, FaFilePdf, FaFileWord, FaFileExcel, FaFileAlt, FaImage } from 'react-icons/fa';
+import { FaLinkedin, FaEnvelope, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import { contactAPI, linkedinAPI } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import { useRecaptcha } from '../../contexts/RecaptchaContext';
@@ -18,6 +18,7 @@ interface ContactProps {
   };
 }
 
+/*
 const MAX_FILES = 5;
 const MAX_SIZE_MB = 10;
 const ALLOWED_TYPES = [
@@ -29,7 +30,9 @@ const ALLOWED_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'text/plain', 'text/csv',
 ];
+*/
 
+/*
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -43,21 +46,26 @@ function fileIcon(mime: string) {
   if (mime.includes('excel') || mime.includes('spreadsheet')) return <FaFileExcel className="text-green-400" />;
   return <FaFileAlt className="text-gray-400" />;
 }
+*/
 
 const Contact = ({ config }: ContactProps) => {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  /*
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentErrors, setAttachmentErrors] = useState<string[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  */
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [linkedinFollowers, setLinkedinFollowers] = useState<number | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const fileInputRef = useRef<HTMLInputElement>(null);
   const { showFromResponse, showError } = useToast();
   const { executeRecaptcha, recaptchaError } = useRecaptcha();
   const [ref, inView] = useInView({ threshold: 0.1, triggerOnce: true });
 
-  useEffect(() => { fetchLinkedInFollowers(); }, []);
+  useEffect(() => {
+    fetchLinkedInFollowers();
+  }, []);
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
@@ -71,7 +79,9 @@ const Contact = ({ config }: ContactProps) => {
     try {
       const response = await linkedinAPI.getFollowers();
       if (response.data.data.followers) setLinkedinFollowers(response.data.data.followers);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -79,6 +89,7 @@ const Contact = ({ config }: ContactProps) => {
   };
 
   // ── Attachment helpers ──────────────────────────────────────────────────────
+  /*
   const addFiles = useCallback((incoming: File[]) => {
     const errs: string[] = [];
     const valid: File[] = [];
@@ -122,6 +133,7 @@ const Contact = ({ config }: ContactProps) => {
     setDragOver(false);
     if (e.dataTransfer.files) addFiles(Array.from(e.dataTransfer.files));
   };
+  */
 
   // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,7 +142,11 @@ const Contact = ({ config }: ContactProps) => {
     setStatus('idle');
 
     if (!executeRecaptcha) {
-      showError({ response: { data: { message: 'ReCAPTCHA is still loading. Please try again in a moment.' } } });
+      showError({
+        response: {
+          data: { message: 'ReCAPTCHA is still loading. Please try again in a moment.' },
+        },
+      });
       setStatus('error');
       setLoading(false);
       return;
@@ -138,13 +154,16 @@ const Contact = ({ config }: ContactProps) => {
 
     try {
       const token = await executeRecaptcha('contact_form');
-      const response = await contactAPI.send({ ...formData, recaptchaToken: token /*, attachments */ });
+      const response = await contactAPI.send({
+        ...formData,
+        recaptchaToken: token /*, attachments */,
+      });
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
-      setAttachments([]);
-      setAttachmentErrors([]);
+      // setAttachments([]);
+      // setAttachmentErrors([]);
       showFromResponse(response);
-    } catch (error: any) {
+    } catch (error) {
       setStatus('error');
       showError(error);
     } finally {
@@ -166,10 +185,13 @@ const Contact = ({ config }: ContactProps) => {
           </h2>
           <div className="w-24 h-1 bg-primary-600 mx-auto mb-8" />
           {config?.subtitle && (
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-4">{config.subtitle}</p>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-4">
+              {config.subtitle}
+            </p>
           )}
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-            {config?.description || "Have a project in mind or want to collaborate? I'd love to hear from you!"}
+            {config?.description ||
+              "Have a project in mind or want to collaborate? I'd love to hear from you!"}
           </p>
         </motion.div>
 
@@ -181,31 +203,81 @@ const Contact = ({ config }: ContactProps) => {
             transition={{ duration: 0.8 }}
             className="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg"
           >
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Send a Message</h3>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              Send a Message
+            </h3>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Name */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
-                <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
               </div>
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
               </div>
               {/* Subject */}
               <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
-                <input type="text" id="subject" name="subject" value={formData.subject} onChange={handleChange} required
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <label
+                  htmlFor="subject"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  id="subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
               </div>
               {/* Message */}
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
-                <textarea id="message" name="message" value={formData.message} onChange={handleChange} required rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none" />
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  Message
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
+                  rows={5}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+                />
               </div>
 
               {/* ── Attachment Zone (Temporarily Disabled) ──────────────────────
@@ -274,7 +346,11 @@ const Contact = ({ config }: ContactProps) => {
                 disabled={loading || !executeRecaptcha}
                 className="w-full px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Sending...' : (!executeRecaptcha ? (recaptchaError || 'Loading ReCAPTCHA...') : 'Send Message')}
+                {loading
+                  ? 'Sending...'
+                  : !executeRecaptcha
+                    ? recaptchaError || 'Loading ReCAPTCHA...'
+                    : 'Send Message'}
               </button>
             </form>
           </motion.div>
@@ -287,11 +363,17 @@ const Contact = ({ config }: ContactProps) => {
             className="space-y-8"
           >
             <div className="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Connect With Me</h3>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                Connect With Me
+              </h3>
               <div className="space-y-6">
                 {config?.linkedinUrl && (
-                  <a href={config.linkedinUrl} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group">
+                  <a
+                    href={config.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                  >
                     <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-lg group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
                       <FaLinkedin className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                     </div>
@@ -306,8 +388,10 @@ const Contact = ({ config }: ContactProps) => {
                   </a>
                 )}
                 {config?.email && (
-                  <a href={`mailto:${config.email}`}
-                    className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group">
+                  <a
+                    href={`mailto:${config.email}`}
+                    className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                  >
                     <div className="p-3 bg-primary-100 dark:bg-primary-900 rounded-lg group-hover:bg-primary-200 dark:group-hover:bg-primary-800 transition-colors">
                       <FaEnvelope className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                     </div>
@@ -323,7 +407,8 @@ const Contact = ({ config }: ContactProps) => {
             <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl p-8 text-white">
               <h3 className="text-xl font-bold mb-4">Let's Work Together</h3>
               <p className="text-primary-100">
-                I'm always open to discussing new projects, creative ideas, or opportunities to be part of your vision.
+                I'm always open to discussing new projects, creative ideas, or opportunities to be
+                part of your vision.
               </p>
             </div>
           </motion.div>
