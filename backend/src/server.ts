@@ -43,11 +43,14 @@ app.set('trust proxy', 1);
 // Serve static uploaded files BEFORE Helmet so that Helmet's default
 // Cross-Origin-Resource-Policy: same-origin header does NOT apply to them.
 // Without this, browsers block cross-origin image loads with ERR_BLOCKED_BY_RESPONSE.NotSameOrigin.
-app.use('/uploads', (_req, res, next) => {
+const staticFileMiddleware = (_req: Request, res: Response, next: () => void) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     res.setHeader('Access-Control-Allow-Origin', '*');
     next();
-}, express.static(path.join(process.cwd(), 'public/uploads')));
+};
+app.use('/uploads', staticFileMiddleware, express.static(path.join(process.cwd(), 'public/uploads')));
+app.use('/uploads/contact-attachments', staticFileMiddleware, express.static(path.join(process.cwd(), 'public/uploads/contact-attachments')));
+
 
 // Security middleware
 app.use(helmet());
@@ -59,15 +62,24 @@ app.use(
     origin: ['http://localhost:3000', 'http://localhost:3001', env.FRONTEND_URL],
     credentials: true,
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      // Resend webhook signature headers
+      'X-Resend-Signature',
+      'Svix-Id',
+      'Svix-Timestamp',
+      'Svix-Signature',
+    ],
   })
 );
 
-// Rate limiting
+// Rate limiting — skip for Resend inbound webhook so delivery IPs are never throttled
 const limiter = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
   max: env.RATE_LIMIT_MAX_REQUESTS,
   message: messages.rateLimitExceeded(),
+  skip: (req) => req.originalUrl.startsWith('/api/contact/webhook/'),
 });
 app.use('/api/', limiter);
 
