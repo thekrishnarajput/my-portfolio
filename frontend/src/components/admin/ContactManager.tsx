@@ -2,10 +2,28 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { contactAPI } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
 import {
-  FaEnvelope, FaEnvelopeOpen, FaTrash, FaSearch,
-  FaCircle, FaCheckCircle, FaTimesCircle, FaSpinner, FaInbox,
-  FaFilter, FaPaperPlane, FaChevronLeft, FaChevronRight, FaSync,
-  FaUser, FaFilePdf, FaFileWord, FaFileExcel, FaFileAlt, FaImage, FaDownload, FaPaperclip,
+  FaEnvelope,
+  FaEnvelopeOpen,
+  FaTrash,
+  FaSearch,
+  FaCircle,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaSpinner,
+  FaInbox,
+  FaFilter,
+  FaPaperPlane,
+  FaChevronLeft,
+  FaChevronRight,
+  FaSync,
+  FaUser,
+  FaFilePdf,
+  FaFileWord,
+  FaFileExcel,
+  FaFileAlt,
+  FaImage,
+  FaDownload,
+  FaPaperclip,
 } from 'react-icons/fa';
 
 interface Attachment {
@@ -31,7 +49,7 @@ interface ContactMessage {
   email: string;
   subject: string;
   message: string;
-  attachments: Attachment[];  // files on the initial message
+  attachments: Attachment[]; // files on the initial message
   read: boolean;
   status: 'pending' | 'replied' | 'closed';
   threadId: string;
@@ -81,11 +99,15 @@ function attachmentIcon(mime: string) {
   if (mime.startsWith('image/')) return <FaImage className="w-3.5 h-3.5 text-violet-400" />;
   if (mime === 'application/pdf') return <FaFilePdf className="w-3.5 h-3.5 text-red-400" />;
   if (mime.includes('word')) return <FaFileWord className="w-3.5 h-3.5 text-blue-400" />;
-  if (mime.includes('excel') || mime.includes('spreadsheet')) return <FaFileExcel className="w-3.5 h-3.5 text-green-400" />;
+  if (mime.includes('excel') || mime.includes('spreadsheet'))
+    return <FaFileExcel className="w-3.5 h-3.5 text-green-400" />;
   return <FaFileAlt className="w-3.5 h-3.5 text-gray-400" />;
 }
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(
+  /\/api$/,
+  ''
+);
 
 function AttachmentList({ attachments }: { attachments: Attachment[] }) {
   if (!attachments || attachments.length === 0) return null;
@@ -138,8 +160,6 @@ const ContactManager = () => {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const selectedIdRef = useRef<string | null>(null);
   const [replyAttachments, setReplyAttachments] = useState<File[]>([]);
   const [replyAttachmentErrors, setReplyAttachmentErrors] = useState<string[]>([]);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
@@ -154,13 +174,18 @@ const ContactManager = () => {
   const MAX_FILES = 5;
   const MAX_SIZE_MB = 10;
   const ALLOWED_TYPES = [
-    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/svg+xml',
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'text/plain', 'text/csv',
+    'text/plain',
+    'text/csv',
   ];
 
   const addReplyFiles = useCallback((incoming: File[]) => {
@@ -237,35 +262,35 @@ const ContactManager = () => {
     };
   }, [isResizing]);
 
-  const handleRefreshAll = useCallback(async (isBackground = false) => {
-    if (refreshing) return;
-    if (!isBackground) setRefreshing(true);
-    try {
-      const [msgsRes, statsRes] = await Promise.all([
-        contactAPI.getAll(),
-        contactAPI.getStats(),
-      ]);
-      setMessages(msgsRes.data.data);
-      setStats(statsRes.data.data);
+  const handleRefreshAll = useCallback(
+    async (isBackground = false) => {
+      if (refreshing) return;
+      if (!isBackground) setRefreshing(true);
+      try {
+        const [msgsRes, statsRes] = await Promise.all([contactAPI.getAll(), contactAPI.getStats()]);
+        setMessages(msgsRes.data.data);
+        setStats(statsRes.data.data);
 
-      // Also refresh the selected message replies if one is open
-      if (selectedMessage) {
-        try {
-          const res = await contactAPI.getReplies(selectedMessage._id);
-          const { replies, status } = res.data.data;
-          setSelectedMessage((prev) =>
-            prev?._id === selectedMessage._id ? { ...prev, replies, status } : prev
-          );
-        } catch {
-          // silent background poll error
+        // Also refresh the selected message replies if one is open
+        if (selectedMessage) {
+          try {
+            const res = await contactAPI.getReplies(selectedMessage._id);
+            const { replies, status } = res.data.data;
+            setSelectedMessage((prev) =>
+              prev?._id === selectedMessage._id ? { ...prev, replies, status } : prev
+            );
+          } catch {
+            // silent background poll error
+          }
         }
+      } catch (error) {
+        if (!isBackground) showError(error);
+      } finally {
+        if (!isBackground) setRefreshing(false);
       }
-    } catch (error) {
-      if (!isBackground) showError(error);
-    } finally {
-      if (!isBackground) setRefreshing(false);
-    }
-  }, [selectedMessage, refreshing]);
+    },
+    [selectedMessage, refreshing]
+  );
 
   // Auto-refresh the entire inbox (list + active thread + stats) every 30 seconds
   useEffect(() => {
@@ -278,10 +303,7 @@ const ContactManager = () => {
 
   const fetchAll = async () => {
     try {
-      const [msgsRes, statsRes] = await Promise.all([
-        contactAPI.getAll(),
-        contactAPI.getStats(),
-      ]);
+      const [msgsRes, statsRes] = await Promise.all([contactAPI.getAll(), contactAPI.getStats()]);
       setMessages(msgsRes.data.data);
       setStats(statsRes.data.data);
     } catch (error) {
@@ -302,11 +324,9 @@ const ContactManager = () => {
       const full: ContactMessage = res.data.data;
       setSelectedMessage(full);
       // Update read state in local list
-      setMessages((prev) =>
-        prev.map((m) => (m._id === msg._id ? { ...m, read: true } : m))
-      );
+      setMessages((prev) => prev.map((m) => (m._id === msg._id ? { ...m, read: true } : m)));
       if (stats && !msg.read) {
-        setStats((s) => s ? { ...s, unread: Math.max(0, s.unread - 1) } : s);
+        setStats((s) => (s ? { ...s, unread: Math.max(0, s.unread - 1) } : s));
       }
     } catch (error) {
       showError(error);
@@ -319,14 +339,20 @@ const ContactManager = () => {
     if (!selectedMessage || !replyContent.trim()) return;
     setSendingReply(true);
     try {
-      const res = await contactAPI.reply(selectedMessage._id, replyContent.trim(), replyAttachments);
+      const res = await contactAPI.reply(
+        selectedMessage._id,
+        replyContent.trim(),
+        replyAttachments
+      );
       showFromResponse(res);
       const updated: ContactMessage = res.data.data;
       setSelectedMessage(updated);
       setMessages((prev) =>
         prev.map((m) => (m._id === updated._id ? { ...m, status: updated.status } : m))
       );
-      setStats((s) => s ? { ...s, pending: Math.max(0, s.pending - 1), replied: s.replied + 1 } : s);
+      setStats((s) =>
+        s ? { ...s, pending: Math.max(0, s.pending - 1), replied: s.replied + 1 } : s
+      );
       setReplyContent('');
       setReplyAttachments([]);
       setReplyAttachmentErrors([]);
@@ -412,7 +438,12 @@ const ContactManager = () => {
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
-    if (!window.confirm(`Are you sure you want to delete the ${selectedIds.length} selected message(s)?`)) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the ${selectedIds.length} selected message(s)?`
+      )
+    )
+      return;
     try {
       const res = await contactAPI.bulkDelete(selectedIds);
       showFromResponse(res);
@@ -443,10 +474,13 @@ const ContactManager = () => {
       return matchesSearch && matchesStatus && matchesRead;
     })
     .sort((a, b) => {
-      if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sortBy === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortBy === 'newest')
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sortBy === 'oldest')
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       if (sortBy === 'unread-first') {
-        if (a.read === b.read) return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        if (a.read === b.read)
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         return a.read ? 1 : -1;
       }
       if (sortBy === 'name-az') return a.name.localeCompare(b.name);
@@ -457,9 +491,8 @@ const ContactManager = () => {
   const endIndex = Math.min(startIndex + itemsPerPage, filtered.length);
   const paginatedFiltered = filtered.slice(startIndex, endIndex);
 
-  const rangeText = filtered.length > 0 
-    ? `${startIndex + 1}–${endIndex} of ${filtered.length}`
-    : '0 of 0';
+  const rangeText =
+    filtered.length > 0 ? `${startIndex + 1}–${endIndex} of ${filtered.length}` : '0 of 0';
 
   if (loading) {
     return (
@@ -488,9 +521,15 @@ const ContactManager = () => {
         </div>
         {stats && (
           <div className="hidden md:flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <span className="flex items-center gap-1">{STATUS_ICONS.pending} {stats.pending} pending</span>
-            <span className="flex items-center gap-1">{STATUS_ICONS.replied} {stats.replied} replied</span>
-            <span className="flex items-center gap-1">{STATUS_ICONS.closed} {stats.closed} closed</span>
+            <span className="flex items-center gap-1">
+              {STATUS_ICONS.pending} {stats.pending} pending
+            </span>
+            <span className="flex items-center gap-1">
+              {STATUS_ICONS.replied} {stats.replied} replied
+            </span>
+            <span className="flex items-center gap-1">
+              {STATUS_ICONS.closed} {stats.closed} closed
+            </span>
           </div>
         )}
       </div>
@@ -504,23 +543,35 @@ const ContactManager = () => {
           style={{ width: sidebarCollapsed ? '48px' : `${sidebarWidth}px` }}
         >
           {/* Sidebar Header with collapse toggle */}
-          <div className={`flex items-center border-b border-gray-200 dark:border-gray-700 flex-shrink-0 ${sidebarCollapsed ? 'justify-center p-2' : 'justify-between px-3 py-2'}`}>
+          <div
+            className={`flex items-center border-b border-gray-200 dark:border-gray-700 flex-shrink-0 ${sidebarCollapsed ? 'justify-center p-2' : 'justify-between px-3 py-2'}`}
+          >
             {!sidebarCollapsed && (
               <div className="flex items-center gap-2 flex-1 mr-2">
                 <input
                   type="checkbox"
-                  checked={paginatedFiltered.length > 0 && paginatedFiltered.every((msg) => selectedIds.includes(msg._id))}
+                  checked={
+                    paginatedFiltered.length > 0 &&
+                    paginatedFiltered.every((msg) => selectedIds.includes(msg._id))
+                  }
                   ref={(el) => {
                     if (el) {
                       const currentPageIds = paginatedFiltered.map((m) => m._id);
-                      const isAllSelected = currentPageIds.length > 0 && currentPageIds.every((id) => selectedIds.includes(id));
-                      const isSomeSelected = currentPageIds.length > 0 && currentPageIds.some((id) => selectedIds.includes(id)) && !isAllSelected;
+                      const isAllSelected =
+                        currentPageIds.length > 0 &&
+                        currentPageIds.every((id) => selectedIds.includes(id));
+                      const isSomeSelected =
+                        currentPageIds.length > 0 &&
+                        currentPageIds.some((id) => selectedIds.includes(id)) &&
+                        !isAllSelected;
                       el.indeterminate = isSomeSelected;
                     }
                   }}
                   onChange={() => {
                     const currentPageIds = paginatedFiltered.map((m) => m._id);
-                    const isAllSelected = currentPageIds.length > 0 && currentPageIds.every((id) => selectedIds.includes(id));
+                    const isAllSelected =
+                      currentPageIds.length > 0 &&
+                      currentPageIds.every((id) => selectedIds.includes(id));
                     if (isAllSelected) {
                       setSelectedIds((prev) => prev.filter((id) => !currentPageIds.includes(id)));
                     } else {
@@ -571,7 +622,7 @@ const ContactManager = () => {
                         backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,
                         backgroundPosition: 'right -4px center',
                         backgroundSize: '16px',
-                        backgroundRepeat: 'no-repeat'
+                        backgroundRepeat: 'no-repeat',
                       }}
                       title="Messages per page"
                     >
@@ -594,7 +645,11 @@ const ContactManager = () => {
                         <FaChevronLeft className="w-2.5 h-2.5" />
                       </button>
                       <button
-                        onClick={() => setCurrentPage((p) => Math.min(Math.ceil(filtered.length / itemsPerPage), p + 1))}
+                        onClick={() =>
+                          setCurrentPage((p) =>
+                            Math.min(Math.ceil(filtered.length / itemsPerPage), p + 1)
+                          )
+                        }
                         disabled={endIndex >= filtered.length}
                         className="p-1 rounded-md text-gray-500 hover:text-primary-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-500 disabled:cursor-not-allowed"
                         title="Next page"
@@ -622,7 +677,11 @@ const ContactManager = () => {
                 className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               >
-                {sidebarCollapsed ? <FaChevronRight className="w-3.5 h-3.5" /> : <FaChevronLeft className="w-3.5 h-3.5" />}
+                {sidebarCollapsed ? (
+                  <FaChevronRight className="w-3.5 h-3.5" />
+                ) : (
+                  <FaChevronLeft className="w-3.5 h-3.5" />
+                )}
               </button>
             </div>
           </div>
@@ -633,15 +692,20 @@ const ContactManager = () => {
               {filtered.map((msg) => (
                 <button
                   key={msg._id}
-                  onClick={() => { setSidebarCollapsed(false); handleSelectMessage(msg); }}
+                  onClick={() => {
+                    setSidebarCollapsed(false);
+                    handleSelectMessage(msg);
+                  }}
                   title={`${msg.name} — ${msg.subject}`}
                   className={`w-full flex justify-center py-3 border-b border-gray-100 dark:border-gray-700 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
                     selectedMessage?._id === msg._id ? 'bg-primary-50 dark:bg-primary-900/20' : ''
                   }`}
                 >
-                  {msg.read
-                    ? <FaEnvelopeOpen className="w-4 h-4 text-gray-400" />
-                    : <FaEnvelope className="w-4 h-4 text-primary-500" />}
+                  {msg.read ? (
+                    <FaEnvelopeOpen className="w-4 h-4 text-gray-400" />
+                  ) : (
+                    <FaEnvelope className="w-4 h-4 text-primary-500" />
+                  )}
                 </button>
               ))}
             </div>
@@ -666,7 +730,10 @@ const ContactManager = () => {
                 <button
                   onClick={() => setShowFilterPanel(!showFilterPanel)}
                   className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md transition-colors ${
-                    showFilterPanel || statusFilter !== 'all' || readFilter !== 'all' || sortBy !== 'newest'
+                    showFilterPanel ||
+                    statusFilter !== 'all' ||
+                    readFilter !== 'all' ||
+                    sortBy !== 'newest'
                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20'
                       : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
@@ -675,7 +742,11 @@ const ContactManager = () => {
                   Filters & Sort
                   {(statusFilter !== 'all' || readFilter !== 'all' || sortBy !== 'newest') && (
                     <span className="ml-1 bg-primary-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                      {[statusFilter !== 'all', readFilter !== 'all', sortBy !== 'newest'].filter(Boolean).length}
+                      {
+                        [statusFilter !== 'all', readFilter !== 'all', sortBy !== 'newest'].filter(
+                          Boolean
+                        ).length
+                      }
                     </span>
                   )}
                 </button>
@@ -684,7 +755,9 @@ const ContactManager = () => {
                   <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600 space-y-3">
                     {/* Status filter */}
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1.5">Status</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1.5">
+                        Status
+                      </p>
                       <div className="flex flex-wrap gap-1">
                         {(['all', 'pending', 'replied', 'closed'] as const).map((s) => (
                           <button
@@ -704,7 +777,9 @@ const ContactManager = () => {
 
                     {/* Read filter */}
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1.5">Read Status</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1.5">
+                        Read Status
+                      </p>
                       <div className="flex gap-1">
                         {(['all', 'unread', 'read'] as const).map((r) => (
                           <button
@@ -724,14 +799,18 @@ const ContactManager = () => {
 
                     {/* Sort */}
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1.5">Sort By</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-1.5">
+                        Sort By
+                      </p>
                       <div className="flex flex-col gap-1">
-                        {([
-                          { value: 'newest', label: '↓ Newest first' },
-                          { value: 'oldest', label: '↑ Oldest first' },
-                          { value: 'unread-first', label: '✉ Unread first' },
-                          { value: 'name-az', label: 'A→Z Name' },
-                        ] as const).map(({ value, label }) => (
+                        {(
+                          [
+                            { value: 'newest', label: '↓ Newest first' },
+                            { value: 'oldest', label: '↑ Oldest first' },
+                            { value: 'unread-first', label: '✉ Unread first' },
+                            { value: 'name-az', label: 'A→Z Name' },
+                          ] as const
+                        ).map(({ value, label }) => (
                           <button
                             key={value}
                             onClick={() => setSortBy(value)}
@@ -750,7 +829,11 @@ const ContactManager = () => {
                     {/* Reset */}
                     {(statusFilter !== 'all' || readFilter !== 'all' || sortBy !== 'newest') && (
                       <button
-                        onClick={() => { setStatusFilter('all'); setReadFilter('all'); setSortBy('newest'); }}
+                        onClick={() => {
+                          setStatusFilter('all');
+                          setReadFilter('all');
+                          setSortBy('newest');
+                        }}
                         className="text-[11px] text-red-500 hover:text-red-600 font-medium"
                       >
                         ✕ Reset filters
@@ -768,7 +851,11 @@ const ContactManager = () => {
                     <p className="text-sm">No messages found</p>
                     {(statusFilter !== 'all' || readFilter !== 'all' || searchQuery) && (
                       <button
-                        onClick={() => { setStatusFilter('all'); setReadFilter('all'); setSearchQuery(''); }}
+                        onClick={() => {
+                          setStatusFilter('all');
+                          setReadFilter('all');
+                          setSearchQuery('');
+                        }}
                         className="mt-2 text-xs text-primary-500 hover:underline"
                       >
                         Clear filters
@@ -784,18 +871,23 @@ const ContactManager = () => {
                         selectedMessage?._id === msg._id
                           ? 'bg-primary-50 dark:bg-primary-900/20 border-l-4 border-l-primary-500'
                           : !msg.read
-                          ? 'bg-blue-50/40 dark:bg-blue-900/10'
-                          : ''
+                            ? 'bg-blue-50/40 dark:bg-blue-900/10'
+                            : ''
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
-                        <div className="flex items-center mt-1" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="flex items-center mt-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <input
                             type="checkbox"
                             checked={selectedIds.includes(msg._id)}
                             onChange={() => {
                               setSelectedIds((prev) =>
-                                prev.includes(msg._id) ? prev.filter((x) => x !== msg._id) : [...prev, msg._id]
+                                prev.includes(msg._id)
+                                  ? prev.filter((x) => x !== msg._id)
+                                  : [...prev, msg._id]
                               );
                             }}
                             className="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-500 w-3.5 h-3.5 cursor-pointer"
@@ -809,7 +901,9 @@ const ContactManager = () => {
                               const res = await contactAPI.markAsRead(msg._id, nextRead);
                               const updated: ContactMessage = res.data.data;
                               setMessages((prev) =>
-                                prev.map((m) => (m._id === updated._id ? { ...m, read: updated.read } : m))
+                                prev.map((m) =>
+                                  m._id === updated._id ? { ...m, read: updated.read } : m
+                                )
                               );
                               if (stats) {
                                 setStats((s) => {
@@ -822,7 +916,9 @@ const ContactManager = () => {
                                 if (!nextRead) {
                                   setSelectedMessage(null);
                                 } else {
-                                  setSelectedMessage((prev) => prev ? { ...prev, read: true } : prev);
+                                  setSelectedMessage((prev) =>
+                                    prev ? { ...prev, read: true } : prev
+                                  );
                                 }
                               }
                             } catch (error) {
@@ -830,7 +926,7 @@ const ContactManager = () => {
                             }
                           }}
                           className="flex-shrink-0 mt-1 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors text-gray-400 hover:text-primary-500"
-                          title={msg.read ? "Mark as unread" : "Mark as read"}
+                          title={msg.read ? 'Mark as unread' : 'Mark as read'}
                         >
                           {msg.read ? (
                             <FaEnvelopeOpen className="w-3.5 h-3.5" />
@@ -840,20 +936,30 @@ const ContactManager = () => {
                         </button>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-1 mb-0.5">
-                            <span className={`text-sm truncate ${!msg.read ? 'text-gray-900 dark:text-white font-bold' : 'text-gray-700 dark:text-gray-300 font-semibold'}`}>
+                            <span
+                              className={`text-sm truncate ${!msg.read ? 'text-gray-900 dark:text-white font-bold' : 'text-gray-700 dark:text-gray-300 font-semibold'}`}
+                            >
                               {msg.name}
                             </span>
-                            <span className="text-xs text-gray-400 flex-shrink-0">{formatDate(msg.createdAt)}</span>
+                            <span className="text-xs text-gray-400 flex-shrink-0">
+                              {formatDate(msg.createdAt)}
+                            </span>
                           </div>
                           <p className="text-xs truncate mb-1 text-gray-500 dark:text-gray-400">
-                            <span className={`mr-1.5 ${!msg.read ? 'text-gray-900 dark:text-white font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'}`}>
+                            <span
+                              className={`mr-1.5 ${!msg.read ? 'text-gray-900 dark:text-white font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'}`}
+                            >
                               {msg.subject}
                             </span>
-                            <span className="text-gray-400 dark:text-gray-500">— {getLatestMessagePreview(msg)}</span>
+                            <span className="text-gray-400 dark:text-gray-500">
+                              — {getLatestMessagePreview(msg)}
+                            </span>
                           </p>
                           <div className="flex items-center justify-between">
                             <p className="text-xs text-gray-400 truncate">{msg.email}</p>
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1 flex-shrink-0 ${STATUS_COLORS[msg.status]}`}>
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-1 flex-shrink-0 ${STATUS_COLORS[msg.status]}`}
+                            >
                               {STATUS_ICONS[msg.status]} {msg.status}
                             </span>
                           </div>
@@ -889,7 +995,9 @@ const ContactManager = () => {
           ) : !selectedMessage ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 p-8 text-center">
               <FaEnvelope className="w-16 h-16 mb-4 opacity-20" />
-              <h3 className="text-lg font-semibold mb-2 text-gray-500 dark:text-gray-400">Select a message</h3>
+              <h3 className="text-lg font-semibold mb-2 text-gray-500 dark:text-gray-400">
+                Select a message
+              </h3>
               <p className="text-sm">Choose a conversation from the list to read it here</p>
             </div>
           ) : (
@@ -898,19 +1006,25 @@ const ContactManager = () => {
               <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">{selectedMessage.subject}</h3>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                      {selectedMessage.subject}
+                    </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      From: <span className="font-medium text-gray-700 dark:text-gray-300">{selectedMessage.name}</span>{' '}
+                      From:{' '}
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        {selectedMessage.name}
+                      </span>{' '}
                       &lt;{selectedMessage.email}&gt;
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-
                     {/* Status Dropdown */}
                     <div className="relative">
                       <select
                         value={selectedMessage.status}
-                        onChange={(e) => handleStatusChange(e.target.value as any)}
+                        onChange={(e) =>
+                          handleStatusChange(e.target.value as 'pending' | 'replied' | 'closed')
+                        }
                         disabled={updatingStatus}
                         className={`text-xs px-2 py-1 rounded-full border-0 font-medium cursor-pointer appearance-none pr-5 focus:ring-2 focus:ring-primary-500 ${STATUS_COLORS[selectedMessage.status]}`}
                       >
@@ -930,7 +1044,9 @@ const ContactManager = () => {
                           const res = await contactAPI.markAsRead(selectedMessage._id, nextRead);
                           const updated: ContactMessage = res.data.data;
                           setMessages((prev) =>
-                            prev.map((m) => (m._id === updated._id ? { ...m, read: updated.read } : m))
+                            prev.map((m) =>
+                              m._id === updated._id ? { ...m, read: updated.read } : m
+                            )
                           );
                           if (stats) {
                             setStats((s) => {
@@ -942,14 +1058,14 @@ const ContactManager = () => {
                           if (!nextRead) {
                             setSelectedMessage(null); // Return to list view when marked as unread
                           } else {
-                            setSelectedMessage((prev) => prev ? { ...prev, read: true } : prev);
+                            setSelectedMessage((prev) => (prev ? { ...prev, read: true } : prev));
                           }
                         } catch (error) {
                           showError(error);
                         }
                       }}
                       className="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                      title={selectedMessage.read ? "Mark as unread" : "Mark as read"}
+                      title={selectedMessage.read ? 'Mark as unread' : 'Mark as read'}
                     >
                       {selectedMessage.read ? (
                         <FaEnvelope className="w-3.5 h-3.5" />
@@ -973,9 +1089,14 @@ const ContactManager = () => {
               {/* Delete Confirm Banner */}
               {showDeleteConfirm && (
                 <div className="mx-4 mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center justify-between flex-shrink-0">
-                  <p className="text-sm text-red-700 dark:text-red-300">Delete this conversation permanently?</p>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    Delete this conversation permanently?
+                  </p>
                   <div className="flex gap-2">
-                    <button onClick={() => setShowDeleteConfirm(false)} className="text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+                    >
                       Cancel
                     </button>
                     <button
@@ -999,8 +1120,12 @@ const ContactManager = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2 mb-1">
-                      <span className="font-semibold text-sm text-gray-900 dark:text-white">{selectedMessage.name}</span>
-                      <span className="text-xs text-gray-400">{new Date(selectedMessage.createdAt).toLocaleString()}</span>
+                      <span className="font-semibold text-sm text-gray-900 dark:text-white">
+                        {selectedMessage.name}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(selectedMessage.createdAt).toLocaleString()}
+                      </span>
                     </div>
                     <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl rounded-tl-sm p-4 shadow-sm">
                       <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
@@ -1024,16 +1149,23 @@ const ContactManager = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2 mb-1">
-                          <span className="font-semibold text-sm text-teal-700 dark:text-teal-300">{selectedMessage.name}</span>
-                          <span className="text-[10px] bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 px-1.5 py-0.5 rounded-full font-medium">via email</span>
-                          <span className="text-xs text-gray-400">{new Date(reply.sentAt).toLocaleString()}</span>
+                          <span className="font-semibold text-sm text-teal-700 dark:text-teal-300">
+                            {selectedMessage.name}
+                          </span>
+                          <span className="text-[10px] bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 px-1.5 py-0.5 rounded-full font-medium">
+                            via email
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {new Date(reply.sentAt).toLocaleString()}
+                          </span>
                         </div>
                         {reply.content === '__NO_BODY__' ? (
                           // Resend inbound API doesn't expose email body — show notification badge
                           <div className="flex items-center gap-2 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-700 border-dashed rounded-xl rounded-tl-sm px-4 py-3 shadow-sm max-w-[85%]">
                             <FaEnvelope className="w-3.5 h-3.5 text-teal-500 flex-shrink-0" />
                             <span className="text-sm text-teal-700 dark:text-teal-300 italic">
-                              {selectedMessage.name} replied via email — check your inbox for the full message.
+                              {selectedMessage.name} replied via email — check your inbox for the
+                              full message.
                             </span>
                           </div>
                         ) : (
@@ -1041,7 +1173,9 @@ const ContactManager = () => {
                             <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
                               {reply.content}
                             </p>
-                            {reply.attachments?.length > 0 && <AttachmentList attachments={reply.attachments} />}
+                            {reply.attachments?.length > 0 && (
+                              <AttachmentList attachments={reply.attachments} />
+                            )}
                           </div>
                         )}
                       </div>
@@ -1051,14 +1185,20 @@ const ContactManager = () => {
                     <div key={reply._id} className="flex gap-3 justify-end">
                       <div className="flex-1 min-w-0 flex flex-col items-end">
                         <div className="flex items-baseline gap-2 mb-1">
-                          <span className="text-xs text-gray-400">{new Date(reply.sentAt).toLocaleString()}</span>
-                          <span className="font-semibold text-sm text-primary-600 dark:text-primary-400">You</span>
+                          <span className="text-xs text-gray-400">
+                            {new Date(reply.sentAt).toLocaleString()}
+                          </span>
+                          <span className="font-semibold text-sm text-primary-600 dark:text-primary-400">
+                            You
+                          </span>
                         </div>
                         <div className="bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-700 rounded-xl rounded-tr-sm p-4 shadow-sm max-w-[85%]">
                           <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
                             {reply.content}
                           </p>
-                          {reply.attachments?.length > 0 && <AttachmentList attachments={reply.attachments} />}
+                          {reply.attachments?.length > 0 && (
+                            <AttachmentList attachments={reply.attachments} />
+                          )}
                         </div>
                       </div>
                       <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
@@ -1076,12 +1216,25 @@ const ContactManager = () => {
                   {replyAttachments.length > 0 && (
                     <ul className="mb-3 flex flex-wrap gap-2">
                       {replyAttachments.map((f, i) => (
-                        <li key={i} className="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1 shadow-sm text-xs">
+                        <li
+                          key={i}
+                          className="flex items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1 shadow-sm text-xs"
+                        >
                           <span className="flex-shrink-0">{attachmentIcon(f.type)}</span>
-                          <span className="text-gray-800 dark:text-gray-200 truncate max-w-[120px]" title={f.name}>{f.name}</span>
-                          <span className="text-[10px] text-gray-400 flex-shrink-0">{formatBytes(f.size)}</span>
-                          <button type="button" onClick={() => removeReplyAttachment(i)}
-                            className="flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors ml-1">
+                          <span
+                            className="text-gray-800 dark:text-gray-200 truncate max-w-[120px]"
+                            title={f.name}
+                          >
+                            {f.name}
+                          </span>
+                          <span className="text-[10px] text-gray-400 flex-shrink-0">
+                            {formatBytes(f.size)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeReplyAttachment(i)}
+                            className="flex-shrink-0 text-gray-400 hover:text-red-500 transition-colors ml-1"
+                          >
                             <FaTimesCircle className="w-3.5 h-3.5" />
                           </button>
                         </li>
@@ -1140,10 +1293,16 @@ const ContactManager = () => {
                         disabled={sendingReply || !replyContent.trim()}
                         className="px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2 font-medium text-sm"
                       >
-                        {sendingReply ? <FaSpinner className="animate-spin w-4 h-4" /> : <FaPaperPlane className="w-4 h-4" />}
+                        {sendingReply ? (
+                          <FaSpinner className="animate-spin w-4 h-4" />
+                        ) : (
+                          <FaPaperPlane className="w-4 h-4" />
+                        )}
                         {sendingReply ? 'Sending...' : 'Send'}
                       </button>
-                      <p className="text-[10px] text-gray-400 text-center select-none">Ctrl+Enter</p>
+                      <p className="text-[10px] text-gray-400 text-center select-none">
+                        Ctrl+Enter
+                      </p>
                     </div>
                   </div>
                 </div>
