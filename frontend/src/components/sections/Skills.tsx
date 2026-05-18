@@ -52,6 +52,14 @@ const Skills = ({ config }: SkillsProps) => {
     other: 'Other',
   };
 
+  const groupedSkills = skills.reduce((acc, skill) => {
+    if (!acc[skill.category]) {
+      acc[skill.category] = [];
+    }
+    acc[skill.category].push(skill);
+    return acc;
+  }, {} as Record<string, Skill[]>);
+
   if (loading) {
     return (
       <section id="skills" className="py-20 bg-white dark:bg-gray-900">
@@ -99,70 +107,79 @@ const Skills = ({ config }: SkillsProps) => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
-            {skills.map((skill, index) => (
-              <motion.div
-                key={skill._id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={inView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="group relative bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 hover:-translate-y-1"
-              >
-                {/* Skill Icon/Name */}
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <div className="w-12 h-12 md:w-14 md:h-14 mb-2 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative">
-                    {skill.icon ? (
-                      <img
-                        src={skill.icon}
-                        alt={skill.name}
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          // Hide image and show fallback on error
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent) {
-                            const fallback = parent.querySelector('.icon-fallback') as HTMLElement;
-                            if (fallback) {
-                              fallback.style.display = 'flex';
-                            }
-                          }
-                        }}
-                      />
-                    ) : null}
-                    <div className="icon-fallback w-full h-full rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center" style={{ display: skill.icon ? 'none' : 'flex' }}>
-                      <span className="text-white font-bold text-lg md:text-xl">
-                        {skill.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-                  <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white">
-                    {skill.name}
-                  </h3>
-                  
-                  {/* Proficiency Badge */}
-                  <div className="flex items-center justify-center space-x-1">
-                    <div className="w-16 md:w-20 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full"
-                        initial={{ width: 0 }}
-                        animate={inView ? { width: `${skill.proficiency}%` } : {}}
-                        transition={{ duration: 1, delay: index * 0.05 + 0.3 }}
-                      />
-                    </div>
-                    <span className="text-xs md:text-sm font-medium text-primary-600 dark:text-primary-400 min-w-[2.5rem]">
-                      {skill.proficiency}%
-                    </span>
-                  </div>
-                </div>
+          <div className="space-y-16">
+            {Object.entries(groupedSkills).map(([category, categorySkills]) => (
+              <div key={category}>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-left border-b border-gray-200 dark:border-gray-700 pb-2">
+                  {categoryLabels[category] || category}
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
+                  {categorySkills.map((skill, index) => (
+                    <motion.div
+                      key={skill._id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={inView ? { opacity: 1, scale: 1 } : {}}
+                      transition={{ duration: 0.5, delay: index * 0.05 }}
+                      className="group relative bg-white dark:bg-gray-800 rounded-xl p-4 md:p-5 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 hover:-translate-y-1"
+                    >
+                      {/* Skill Icon/Name */}
+                      <div className="flex flex-col items-center text-center space-y-2">
+                        <div className="w-12 h-12 md:w-14 md:h-14 mb-2 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 relative">
+                          {skill.icon ? (
+                            <img
+                              src={skill.icon}
+                              alt={skill.name}
+                              className="w-full h-full object-contain bg-white dark:bg-gray-200 rounded-lg p-1.5 shadow-sm"
+                              onError={(e) => {
+                                // Hide image and show fallback on error
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  const fallback = parent.querySelector('.icon-fallback') as HTMLElement;
+                                  if (fallback) {
+                                    fallback.style.display = 'flex';
+                                  }
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <div className="icon-fallback w-full h-full rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center" style={{ display: skill.icon ? 'none' : 'flex' }}>
+                            <span className="text-white font-bold text-lg md:text-xl">
+                              {skill.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white">
+                          {skill.name}
+                        </h3>
+                        
+                        {/* Proficiency Badge */}
+                        <div className="flex items-center justify-center space-x-1">
+                          <div className="w-16 md:w-20 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <motion.div
+                              className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full"
+                              initial={{ width: 0 }}
+                              animate={inView ? { width: `${skill.proficiency}%` } : {}}
+                              transition={{ duration: 1, delay: index * 0.05 + 0.3 }}
+                            />
+                          </div>
+                          <span className="text-xs md:text-sm font-medium text-primary-600 dark:text-primary-400 min-w-[2.5rem]">
+                            {skill.proficiency}%
+                          </span>
+                        </div>
+                      </div>
 
-                {/* Category Badge */}
-                <div className="absolute top-2 right-2">
-                  <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full font-medium">
-                    {categoryLabels[skill.category]}
-                  </span>
+                      {/* Category Badge */}
+                      <div className="absolute top-2 right-2">
+                        <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full font-medium">
+                          {categoryLabels[skill.category] || skill.category}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

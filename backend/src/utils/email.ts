@@ -3,9 +3,11 @@ import { messages } from './message';
 
 interface EmailOptions {
   to: string;
+  cc?: string;
   subject: string;
   html: string;
   text?: string;
+  headers?: Record<string, string>;
 }
 
 // Create reusable transporter
@@ -37,9 +39,11 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
     const mailOptions = {
       from: `"Portfolio Contact" <${process.env.EMAIL_FROM}>`,
       to: options.to,
+      cc: options.cc,
       subject: options.subject,
       html: options.html,
-      text: options.text || options.html.replace(/<[^>]*>/g, '')
+      text: options.text || options.html.replace(/<[^>]*>/g, ''),
+      headers: options.headers
     };
 
     await transporter.sendMail(mailOptions);

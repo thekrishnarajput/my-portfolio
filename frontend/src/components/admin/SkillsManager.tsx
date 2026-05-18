@@ -170,6 +170,23 @@ const SkillsManager = () => {
     setSkillToDelete(null);
   };
 
+  const categoryLabels: Record<string, string> = {
+    frontend: 'Frontend',
+    backend: 'Backend',
+    database: 'Database',
+    devops: 'DevOps',
+    tools: 'Tools',
+    other: 'Other',
+  };
+
+  const groupedSkills = skills.reduce((acc, skill) => {
+    if (!acc[skill.category]) {
+      acc[skill.category] = [];
+    }
+    acc[skill.category].push(skill);
+    return acc;
+  }, {} as Record<string, Skill[]>);
+
   if (loading) {
     return <div className="text-center py-12">Loading skills...</div>;
   }
@@ -186,78 +203,87 @@ const SkillsManager = () => {
         </button>
       </div>
 
-      <div className="space-y-4">
-        {skills.map((skill) => (
-          <div
-            key={skill._id}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex justify-between items-center gap-4"
-          >
-            <div className="flex gap-4 flex-1">
-              {/* Logo Preview or Initials */}
-              <div className="flex-shrink-0 relative">
-                {skill.icon ? (
-                  <img
-                    src={skill.icon}
-                    alt={skill.name}
-                    className="w-16 h-16 object-contain rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-2"
-                    onError={(e) => {
-                      // Hide image and show initials on error
-                      e.currentTarget.style.display = 'none';
-                      const parent = e.currentTarget.parentElement;
-                      if (parent) {
-                        const initialsDiv = parent.querySelector('.skill-initials') as HTMLElement;
-                        if (initialsDiv) {
-                          initialsDiv.style.display = 'flex';
-                        }
-                      }
-                    }}
-                  />
-                ) : null}
+      <div className="space-y-8">
+        {Object.entries(groupedSkills).map(([category, categorySkills]) => (
+          <div key={category} className="space-y-4">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+              {categoryLabels[category] || category}
+            </h3>
+            <div className="space-y-4">
+              {categorySkills.map((skill) => (
                 <div
-                  className={`skill-initials w-16 h-16 flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900 dark:to-primary-800 text-primary-700 dark:text-primary-200 font-bold text-lg ${skill.icon ? 'hidden' : ''}`}
+                  key={skill._id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex justify-between items-center gap-4"
                 >
-                  {getInitials(skill.name)}
-                </div>
-              </div>
+                  <div className="flex gap-4 flex-1">
+                    {/* Logo Preview or Initials */}
+                    <div className="flex-shrink-0 relative">
+                      {skill.icon ? (
+                        <img
+                          src={skill.icon}
+                          alt={skill.name}
+                          className="w-16 h-16 object-contain rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-200 p-2"
+                          onError={(e) => {
+                            // Hide image and show initials on error
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent) {
+                              const initialsDiv = parent.querySelector('.skill-initials') as HTMLElement;
+                              if (initialsDiv) {
+                                initialsDiv.style.display = 'flex';
+                              }
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div
+                        className={`skill-initials w-16 h-16 flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900 dark:to-primary-800 text-primary-700 dark:text-primary-200 font-bold text-lg ${skill.icon ? 'hidden' : ''}`}
+                      >
+                        {getInitials(skill.name)}
+                      </div>
+                    </div>
 
-              <div className="flex-1">
-                <div className="flex items-center gap-4 mb-2">
-                  <span className="px-2 py-1 text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                    Order: {skill.order}
-                  </span>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {skill.name}
-                  </h3>
-                  <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                    {skill.category}
-                  </span>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {skill.proficiency}%
-                  </span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-2">
+                        <span className="px-2 py-1 text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                          Order: {skill.order}
+                        </span>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {skill.name}
+                        </h3>
+                        <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                          {skill.category}
+                        </span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {skill.proficiency}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                        <div
+                          className="bg-primary-600 h-2 rounded-full"
+                          style={{ width: `${skill.proficiency}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    <button
+                      onClick={() => handleOpenModal(skill)}
+                      disabled={deleting === skill._id || saving}
+                      className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(skill)}
+                      disabled={deleting === skill._id || saving}
+                      className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-                  <div
-                    className="bg-primary-600 h-2 rounded-full"
-                    style={{ width: `${skill.proficiency}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-2 ml-4">
-              <button
-                onClick={() => handleOpenModal(skill)}
-                disabled={deleting === skill._id || saving}
-                className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FaEdit />
-              </button>
-              <button
-                onClick={() => handleDeleteClick(skill)}
-                disabled={deleting === skill._id || saving}
-                className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FaTrash />
-              </button>
+              ))}
             </div>
           </div>
         ))}

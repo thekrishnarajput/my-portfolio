@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "my-portfolio Docs": {
+      "type": "sse",
+      "url": "https://gitmcp.io/thekrishnarajput/my-portfolio"
+    }
+  }
+}

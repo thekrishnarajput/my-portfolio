@@ -52,9 +52,37 @@ export const skillsAPI = {
 };
 
 export const contactAPI = {
-  send: (data: { name: string; email: string; subject: string; message: string; recaptchaToken?: string }) =>
-    api.post('/contact', data),
+  send: (data: { name: string; email: string; subject: string; message: string; recaptchaToken?: string; attachments?: File[] }) => {
+    const { attachments, ...fields } = data;
+    if (attachments && attachments.length > 0) {
+      const fd = new FormData();
+      Object.entries(fields).forEach(([k, v]) => { if (v !== undefined) fd.append(k, v as string); });
+      attachments.forEach((f) => fd.append('attachments', f));
+      return api.post('/contact', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+    }
+    return api.post('/contact', fields);
+  },
+  // Admin endpoints
+  getAll: () => api.get('/contact/admin'),
+  getById: (id: string) => api.get(`/contact/admin/${id}`),
+  getReplies: (id: string) => api.get(`/contact/admin/${id}/replies`), // lightweight poll
+  reply: (id: string, content: string, attachments?: File[]) => {
+    if (attachments && attachments.length > 0) {
+      const fd = new FormData();
+      fd.append('content', content);
+      attachments.forEach((f) => fd.append('attachments', f));
+      return api.post(`/contact/admin/${id}/reply`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+    }
+    return api.post(`/contact/admin/${id}/reply`, { content });
+  },
+  updateStatus: (id: string, status: string) => api.post(`/contact/admin/${id}/status`, { status }),
+  delete: (id: string) => api.post(`/contact/admin/${id}/delete`),
+  getStats: () => api.get('/contact/admin/stats'),
+  bulkMarkAsRead: (ids: string[], read = true) => api.post('/contact/admin/bulk/read', { ids, read }),
+  bulkDelete: (ids: string[]) => api.post('/contact/admin/bulk/delete', { ids }),
+  markAsRead: (id: string, read = true) => api.post(`/contact/admin/${id}/read`, { read }),
 };
+
 
 export const authAPI = {
   login: (email: string, password: string, recaptchaToken?: string) =>
