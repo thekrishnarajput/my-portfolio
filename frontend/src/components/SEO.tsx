@@ -12,8 +12,10 @@ interface SEOProps {
 }
 
 const defaultTitle = 'Mukesh Karn (Krishna) | Software Engineer';
-const defaultDescription = 'Mukesh Karn (Krishna) - The best software engineer and full-stack developer specializing in modern web technologies. Experienced in React, Node.js, TypeScript, and cloud architecture.';
-const defaultKeywords = 'Mukesh, Mukesh Karn, Mukesh Karn Krishna, Software Engineer, Best software engineer, full-stack developer, portfolio, web development, React, Node.js, TypeScript, JavaScript, MongoDB, Express';
+const defaultDescription =
+  'Mukesh Karn (Krishna) - The best software engineer and full-stack developer specializing in modern web technologies. Experienced in React, Node.js, TypeScript, and cloud architecture.';
+const defaultKeywords =
+  'Mukesh, Mukesh Karn, Mukesh Karn Krishna, Software Engineer, Best software engineer, full-stack developer, portfolio, web development, React, Node.js, TypeScript, JavaScript, MongoDB, Express';
 const siteUrl = 'https://mukeshkarn.com';
 const defaultImage = `${siteUrl}/logo.png`;
 const defaultAuthor = 'Mukesh Karn (Krishna)';
@@ -35,11 +37,12 @@ const SEO: React.FC<SEOProps> = ({
   const fullImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
 
   // Handle favicon URL (could be base64 or URL)
+  // Handle favicon URL (could be base64 or URL)
   const fullFaviconUrl = faviconUrl.startsWith('data:')
     ? faviconUrl
     : faviconUrl.startsWith('http')
       ? faviconUrl
-      : `${siteUrl}${faviconUrl}`;
+      : `${siteUrl}${faviconUrl.startsWith('/') ? '' : '/'}${faviconUrl}`;
 
   // Structured Data (JSON-LD) for Person/Portfolio
   const structuredData = {
@@ -51,10 +54,7 @@ const SEO: React.FC<SEOProps> = ({
     description: description,
     url: siteUrl,
     image: fullImage,
-    sameAs: [
-      'https://github.com/thekrishnarajput',
-      'https://www.linkedin.com/in/thekrishnarajput',
-    ],
+    sameAs: ['https://github.com/thekrishnarajput', 'https://www.linkedin.com/in/thekrishnarajput'],
     email: 'hey@mukeshkarn.com',
     knowsAbout: [
       'Web Development',
@@ -94,10 +94,7 @@ const SEO: React.FC<SEOProps> = ({
     name: defaultAuthor,
     url: siteUrl,
     logo: fullImage,
-    sameAs: [
-      'https://github.com/thekrishnarajput',
-      'https://www.linkedin.com/in/thekrishnarajput',
-    ],
+    sameAs: ['https://github.com/thekrishnarajput', 'https://www.linkedin.com/in/thekrishnarajput'],
     contactPoint: {
       '@type': 'ContactPoint',
       email: 'hey@mukeshkarn.com',
@@ -123,11 +120,26 @@ const SEO: React.FC<SEOProps> = ({
     '@type': 'ItemList',
     itemListElement: [
       { '@type': 'SiteNavigationElement', position: 1, name: 'About', url: `${siteUrl}/#about` },
-      { '@type': 'SiteNavigationElement', position: 2, name: 'Projects', url: `${siteUrl}/#projects` },
-      { '@type': 'SiteNavigationElement', position: 3, name: 'Experience', url: `${siteUrl}/#experience` },
+      {
+        '@type': 'SiteNavigationElement',
+        position: 2,
+        name: 'Projects',
+        url: `${siteUrl}/#projects`,
+      },
+      {
+        '@type': 'SiteNavigationElement',
+        position: 3,
+        name: 'Experience',
+        url: `${siteUrl}/#experience`,
+      },
       { '@type': 'SiteNavigationElement', position: 4, name: 'Skills', url: `${siteUrl}/#skills` },
-      { '@type': 'SiteNavigationElement', position: 5, name: 'Contact', url: `${siteUrl}/#contact` }
-    ]
+      {
+        '@type': 'SiteNavigationElement',
+        position: 5,
+        name: 'Contact',
+        url: `${siteUrl}/#contact`,
+      },
+    ],
   };
 
   return (
@@ -135,10 +147,12 @@ const SEO: React.FC<SEOProps> = ({
       {/* Primary Meta Tags */}
       <title>{fullTitle}</title>
       <meta name="title" content={fullTitle} />
-      <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
       <meta name="author" content={author} />
-      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+      <meta
+        name="robots"
+        content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+      />
       <meta name="googlebot" content="index, follow" />
       <meta name="language" content="English" />
       <meta name="revisit-after" content="7 days" />
@@ -148,7 +162,6 @@ const SEO: React.FC<SEOProps> = ({
       <meta property="og:type" content={type} />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
       <meta property="og:image" content={fullImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
@@ -160,7 +173,6 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={fullUrl} />
       <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={fullImage} />
       <meta name="twitter:image:alt" content={fullTitle} />
       {/* Uncomment and add your Twitter handle when available */}
@@ -180,30 +192,20 @@ const SEO: React.FC<SEOProps> = ({
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       <meta name="apple-mobile-web-app-title" content="Mukesh Karn (Krishna)" />
 
-      {/* Favicon */}
-      <link rel="icon" type="image/png" href={fullFaviconUrl} />
+      {/* Favicon - multiple sizes for different devices */}
+      <link rel="icon" type="image/png" sizes="32x32" href={fullFaviconUrl} />
+      <link rel="icon" type="image/png" sizes="192x192" href={fullFaviconUrl} />
       <link rel="shortcut icon" type="image/png" href={fullFaviconUrl} />
-      <link rel="apple-touch-icon" href={fullFaviconUrl} />
+      <link rel="apple-touch-icon" sizes="180x180" href={fullFaviconUrl} />
 
       {/* Structured Data */}
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
-      <script type="application/ld+json">
-        {JSON.stringify(portfolioStructuredData)}
-      </script>
-      <script type="application/ld+json">
-        {JSON.stringify(organizationStructuredData)}
-      </script>
-      <script type="application/ld+json">
-        {JSON.stringify(breadcrumbStructuredData)}
-      </script>
-      <script type="application/ld+json">
-        {JSON.stringify(sitelinksStructuredData)}
-      </script>
+      <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+      <script type="application/ld+json">{JSON.stringify(portfolioStructuredData)}</script>
+      <script type="application/ld+json">{JSON.stringify(organizationStructuredData)}</script>
+      <script type="application/ld+json">{JSON.stringify(breadcrumbStructuredData)}</script>
+      <script type="application/ld+json">{JSON.stringify(sitelinksStructuredData)}</script>
     </Helmet>
   );
 };
 
 export default SEO;
-
