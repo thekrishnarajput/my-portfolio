@@ -38,25 +38,34 @@ api.interceptors.response.use(
 export const projectsAPI = {
   getAll: () => api.get('/projects'),
   getById: (id: string) => api.get(`/projects/${id}`),
-  create: (data: any) => api.post('/projects', data),
-  update: (id: string, data: any) => api.post(`/projects/${id}/update`, data),
+  create: (data: Record<string, unknown>) => api.post('/projects', data),
+  update: (id: string, data: Record<string, unknown>) => api.post(`/projects/${id}/update`, data),
   delete: (id: string) => api.post(`/projects/${id}/delete`),
 };
 
 export const skillsAPI = {
   getAll: () => api.get('/skills'),
   getById: (id: string) => api.get(`/skills/${id}`),
-  create: (data: any) => api.post('/skills', data),
-  update: (id: string, data: any) => api.post(`/skills/${id}/update`, data),
+  create: (data: Record<string, unknown>) => api.post('/skills', data),
+  update: (id: string, data: Record<string, unknown>) => api.post(`/skills/${id}/update`, data),
   delete: (id: string) => api.post(`/skills/${id}/delete`),
 };
 
 export const contactAPI = {
-  send: (data: { name: string; email: string; subject: string; message: string; recaptchaToken?: string; attachments?: File[] }) => {
+  send: (data: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    recaptchaToken?: string;
+    attachments?: File[];
+  }) => {
     const { attachments, ...fields } = data;
     if (attachments && attachments.length > 0) {
       const fd = new FormData();
-      Object.entries(fields).forEach(([k, v]) => { if (v !== undefined) fd.append(k, v as string); });
+      Object.entries(fields).forEach(([k, v]) => {
+        if (v !== undefined) fd.append(k, v as string);
+      });
       attachments.forEach((f) => fd.append('attachments', f));
       return api.post('/contact', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
     }
@@ -71,18 +80,20 @@ export const contactAPI = {
       const fd = new FormData();
       fd.append('content', content);
       attachments.forEach((f) => fd.append('attachments', f));
-      return api.post(`/contact/admin/${id}/reply`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      return api.post(`/contact/admin/${id}/reply`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
     }
     return api.post(`/contact/admin/${id}/reply`, { content });
   },
   updateStatus: (id: string, status: string) => api.post(`/contact/admin/${id}/status`, { status }),
   delete: (id: string) => api.post(`/contact/admin/${id}/delete`),
   getStats: () => api.get('/contact/admin/stats'),
-  bulkMarkAsRead: (ids: string[], read = true) => api.post('/contact/admin/bulk/read', { ids, read }),
+  bulkMarkAsRead: (ids: string[], read = true) =>
+    api.post('/contact/admin/bulk/read', { ids, read }),
   bulkDelete: (ids: string[]) => api.post('/contact/admin/bulk/delete', { ids }),
   markAsRead: (id: string, read = true) => api.post(`/contact/admin/${id}/read`, { read }),
 };
-
 
 export const authAPI = {
   login: (email: string, password: string, recaptchaToken?: string) =>
@@ -99,7 +110,7 @@ export const visitorsAPI = {
   trackVisit: () => api.post('/visitors/track'),
   getCount: () => api.get('/visitors/count'),
   getAll: (page?: number, limit?: number, sortBy?: string, sortOrder?: 'asc' | 'desc') => {
-    const params: any = {};
+    const params: Record<string, string | number> = {};
     if (page) params.page = page;
     if (limit) params.limit = limit;
     if (sortBy) params.sortBy = sortBy;
@@ -122,8 +133,9 @@ export const homepageConfigAPI = {
   getActive: () => api.get('/homepage-config'),
   getAll: () => api.get('/homepage-config/all'),
   getById: (id: string) => api.get(`/homepage-config/${id}`),
-  create: (data: any) => api.post('/homepage-config', data),
-  update: (id: string, data: any) => api.post(`/homepage-config/${id}/update`, data),
+  create: (data: Record<string, unknown>) => api.post('/homepage-config', data),
+  update: (id: string, data: Record<string, unknown>) =>
+    api.post(`/homepage-config/${id}/update`, data),
   delete: (id: string) => api.post(`/homepage-config/${id}/delete`),
   activate: (id: string) => api.post(`/homepage-config/${id}/activate`),
 };
@@ -139,15 +151,18 @@ export const uploadAPI = {
     });
   },
   /**
-   * Converts a relative upload path (e.g. /uploads/foo.png) returned by the
-   * backend into an absolute URL pointing at the backend server so the browser
-   * can load the image across origins.
+   * Converts a relative upload path (e.g. /uploads/foo.png) into an absolute URL
+   * pointing at the backend server. Cloudinary URLs are already absolute and are
+   * returned unchanged.
    */
   getFileUrl: (relativePath: string): string => {
-    const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
+    if (/^https?:\/\//i.test(relativePath)) return relativePath;
+    const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(
+      /\/api$/,
+      ''
+    );
     return `${base}${relativePath}`;
   },
 };
 
 export default api;
-

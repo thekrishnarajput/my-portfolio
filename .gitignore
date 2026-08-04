@@ -15,3 +15,4 @@ pkg/
 !README.md
 *.md
 node_modules/
+.freebuff

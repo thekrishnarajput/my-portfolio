@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { upload } from '../middleware/upload';
+import { uploadBuffer, UPLOAD_FOLDER_ROOT } from '../services/cloudinaryService';
+import { asyncHandler } from '../errors/errorHandler';
 import { ResponseHelper } from '../utils/response';
 import { AppError } from '../errors/appError';
 import { HTTP_STATUS } from '../constants';
@@ -39,15 +41,30 @@ const router = express.Router();
  *                 url:
  *                   type: string
  */
-router.post('/', authenticate, requireAdmin, upload.single('file'), (req: Request, res: Response) => {
+router.post(
+  '/',
+  authenticate,
+  requireAdmin,
+  upload.single('file'),
+  asyncHandler(async (req: Request, res: Response) => {
     if (!req.file) {
-        throw new AppError('No file uploaded', HTTP_STATUS.BAD_REQUEST);
+      throw new AppError('No file uploaded', HTTP_STATUS.BAD_REQUEST);
     }
 
-    // Return a relative URL path; frontend constructs the full URL from its API base
-    const fileUrl = `/uploads/${req.file.filename}`;
-    
-    ResponseHelper.success(res, { url: fileUrl }, 'File uploaded successfully');
-});
+    // Upload the buffered file straight to Cloudinary; the asset keeps its
+    // original file name (e.g. `my-image.png` → .../mukeshkarn.com/my-image.png)
+    const result = await uploadBuffer(req.file.buffer, {
+      folder: UPLOAD_FOLDER_ROOT,
+      resourceType: 'image',
+      filename: req.file.originalname,
+    });
+
+    ResponseHelper.success(
+      res,
+      { url: result.url, publicId: result.publicId },
+      'File uploaded successfully'
+    );
+  })
+);
 
 export default router;

@@ -99,7 +99,8 @@ const SkillsManager = () => {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit for icons
+    if (file.size > 5 * 1024 * 1024) {
+      // 5MB limit for icons
       alert('Image size must be less than 5MB');
       return;
     }
@@ -131,7 +132,7 @@ const SkillsManager = () => {
       handleCloseModal();
       // Show success toast
       showFromResponse(response);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving skill:', error);
       // Show error toast
       showError(error);
@@ -156,7 +157,7 @@ const SkillsManager = () => {
       showFromResponse(response);
       setShowDeleteModal(false);
       setSkillToDelete(null);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting skill:', error);
       // Show error toast
       showError(error);
@@ -179,13 +180,16 @@ const SkillsManager = () => {
     other: 'Other',
   };
 
-  const groupedSkills = skills.reduce((acc, skill) => {
-    if (!acc[skill.category]) {
-      acc[skill.category] = [];
-    }
-    acc[skill.category].push(skill);
-    return acc;
-  }, {} as Record<string, Skill[]>);
+  const groupedSkills = skills.reduce(
+    (acc, skill) => {
+      if (!acc[skill.category]) {
+        acc[skill.category] = [];
+      }
+      acc[skill.category].push(skill);
+      return acc;
+    },
+    {} as Record<string, Skill[]>
+  );
 
   if (loading) {
     return <div className="text-center py-12">Loading skills...</div>;
@@ -228,7 +232,9 @@ const SkillsManager = () => {
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent) {
-                              const initialsDiv = parent.querySelector('.skill-initials') as HTMLElement;
+                              const initialsDiv = parent.querySelector(
+                                '.skill-initials'
+                              ) as HTMLElement;
                               if (initialsDiv) {
                                 initialsDiv.style.display = 'flex';
                               }
@@ -326,7 +332,9 @@ const SkillsManager = () => {
                   </label>
                   <select
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value as Skill['category'] })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value as Skill['category'] })
+                    }
                     required
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   >
@@ -348,7 +356,9 @@ const SkillsManager = () => {
                     min="0"
                     max="100"
                     value={formData.proficiency}
-                    onChange={(e) => setFormData({ ...formData, proficiency: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, proficiency: parseInt(e.target.value) })
+                    }
                     className="w-full"
                   />
                 </div>
@@ -371,12 +381,19 @@ const SkillsManager = () => {
                     </div>
                     {formData.icon && (
                       <div className="mt-3">
-                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</div>
+                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Preview:
+                        </div>
                         <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700 inline-block">
                           <img
                             src={formData.icon}
                             alt="Icon preview"
                             className="h-16 w-16 object-contain"
+                            // onLoad resets the hide-on-error so a later successful
+                            // upload (new src) makes the preview visible again.
+                            onLoad={(e) => {
+                              e.currentTarget.style.display = '';
+                            }}
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }}
@@ -427,7 +444,9 @@ const SkillsManager = () => {
                   <input
                     type="number"
                     value={formData.order}
-                    onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, order: parseInt(e.target.value) || 0 })
+                    }
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
@@ -446,7 +465,13 @@ const SkillsManager = () => {
                     className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {saving && <FaSpinner className="animate-spin" />}
-                    {saving ? (editingSkill ? 'Updating...' : 'Creating...') : (editingSkill ? 'Update' : 'Create')}
+                    {saving
+                      ? editingSkill
+                        ? 'Updating...'
+                        : 'Creating...'
+                      : editingSkill
+                        ? 'Update'
+                        : 'Create'}
                   </button>
                 </div>
               </form>
@@ -461,9 +486,7 @@ const SkillsManager = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Delete Skill
-                </h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Delete Skill</h3>
                 <button
                   onClick={handleDeleteCancel}
                   disabled={deleting === skillToDelete._id}
@@ -520,4 +543,3 @@ const SkillsManager = () => {
 };
 
 export default SkillsManager;
-
