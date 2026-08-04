@@ -126,12 +126,14 @@ const ProjectsManager = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      // Remove empty strings from optional URL fields
+      // Remove empty strings from optional URL fields. `imageUrl` sends `null`
+      // (not `undefined`) when cleared so the removal actually persists and the
+      // backend can delete the old image from Cloudinary.
       const submitData = {
         ...formData,
         githubUrl: formData.githubUrl?.trim() || undefined,
         liveUrl: formData.liveUrl?.trim() || undefined,
-        imageUrl: formData.imageUrl?.trim() || undefined,
+        imageUrl: formData.imageUrl?.trim() || null,
       };
 
       let response;
@@ -144,7 +146,7 @@ const ProjectsManager = () => {
       handleCloseModal();
       // Show success toast
       showFromResponse(response);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error saving project:', error);
       // Show error toast
       showError(error);
@@ -169,7 +171,7 @@ const ProjectsManager = () => {
       showFromResponse(response);
       setShowDeleteModal(false);
       setProjectToDelete(null);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting project:', error);
       // Show error toast
       showError(error);
@@ -372,13 +374,22 @@ const ProjectsManager = () => {
 
                     {formData.imageUrl && (
                       <div className="mt-2">
-                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</div>
+                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Preview:
+                        </div>
                         <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-2 bg-gray-50 dark:bg-gray-700 inline-block">
                           <img
                             src={formData.imageUrl}
                             alt="Project preview"
                             className="max-h-40 max-w-full object-contain rounded"
-                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            // onLoad resets the hide-on-error so a later successful
+                            // upload (new src) makes the preview visible again.
+                            onLoad={(e) => {
+                              e.currentTarget.style.display = '';
+                            }}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
                           />
                         </div>
                         <button
@@ -417,7 +428,9 @@ const ProjectsManager = () => {
                         <FaInfoCircle className="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help hover:text-primary-600 dark:hover:text-primary-400 transition-colors" />
                         <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block z-50 pointer-events-none">
                           <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-2xl border border-gray-700 dark:border-gray-600 w-56">
-                            <div className="font-semibold mb-0.5 text-primary-300">Display Order</div>
+                            <div className="font-semibold mb-0.5 text-primary-300">
+                              Display Order
+                            </div>
                             <div className="text-gray-300 leading-snug">
                               Lower numbers appear first
                             </div>
@@ -429,7 +442,9 @@ const ProjectsManager = () => {
                     <input
                       type="number"
                       value={formData.order}
-                      onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, order: parseInt(e.target.value) || 0 })
+                      }
                       min="0"
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
@@ -445,7 +460,9 @@ const ProjectsManager = () => {
                         <FaInfoCircle className="w-4 h-4 text-gray-400 dark:text-gray-500 cursor-help hover:text-primary-600 dark:hover:text-primary-400 transition-colors" />
                         <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block z-50 pointer-events-none">
                           <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-2xl border border-gray-700 dark:border-gray-600 w-56">
-                            <div className="font-semibold mb-0.5 text-primary-300">Featured Project</div>
+                            <div className="font-semibold mb-0.5 text-primary-300">
+                              Featured Project
+                            </div>
                             <div className="text-gray-300 leading-snug">
                               Highlight prominently on homepage
                             </div>
@@ -457,17 +474,19 @@ const ProjectsManager = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, featured: !formData.featured })}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${formData.featured
-                        ? 'bg-primary-600 dark:bg-primary-500'
-                        : 'bg-gray-300 dark:bg-gray-600'
-                        }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+                        formData.featured
+                          ? 'bg-primary-600 dark:bg-primary-500'
+                          : 'bg-gray-300 dark:bg-gray-600'
+                      }`}
                       role="switch"
                       aria-checked={formData.featured}
                       aria-label="Toggle featured status"
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.featured ? 'translate-x-6' : 'translate-x-1'
-                          }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          formData.featured ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                       />
                     </button>
                   </div>
@@ -487,7 +506,13 @@ const ProjectsManager = () => {
                     className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {saving && <FaSpinner className="animate-spin" />}
-                    {saving ? (editingProject ? 'Updating...' : 'Creating...') : (editingProject ? 'Update' : 'Create')}
+                    {saving
+                      ? editingProject
+                        ? 'Updating...'
+                        : 'Creating...'
+                      : editingProject
+                        ? 'Update'
+                        : 'Create'}
                   </button>
                 </div>
               </form>
@@ -502,9 +527,7 @@ const ProjectsManager = () => {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Delete Project
-                </h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Delete Project</h3>
                 <button
                   onClick={handleDeleteCancel}
                   disabled={deleting === projectToDelete._id}
@@ -556,4 +579,3 @@ const ProjectsManager = () => {
 };
 
 export default ProjectsManager;
-

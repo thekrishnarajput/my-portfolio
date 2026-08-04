@@ -1,8 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { homepageConfigAPI, uploadAPI } from '../../services/api';
 import { useToast } from '../../hooks/useToast';
-import { IHomepageConfig } from '../../types/homepageConfig';
-import { FaSave, FaEdit, FaToggleOn, FaToggleOff, FaArrowUp, FaArrowDown, FaPlus, FaTrash, FaPalette, FaSpinner } from 'react-icons/fa';
+import { notifyHomepageConfigUpdated } from '../../hooks/useHomepageConfig';
+import {
+  IHomepageConfig,
+  HomepageSections,
+  HeroConfig,
+  AboutConfig,
+  ProjectsConfig,
+  SkillsConfig,
+  ContactConfig,
+  BrandingConfig,
+} from '../../types/homepageConfig';
+import {
+  FaSave,
+  FaEdit,
+  FaToggleOn,
+  FaToggleOff,
+  FaArrowUp,
+  FaArrowDown,
+  FaPlus,
+  FaTrash,
+  FaPalette,
+  FaSpinner,
+} from 'react-icons/fa';
 
 const HomepageConfigManager = () => {
   const [config, setConfig] = useState<IHomepageConfig | null>(null);
@@ -11,11 +32,7 @@ const HomepageConfigManager = () => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const { showFromResponse, showError } = useToast();
 
-  useEffect(() => {
-    fetchConfig();
-  }, []);
-
-  const fetchConfig = async () => {
+  const fetchConfig = useCallback(async () => {
     try {
       setLoading(true);
       const response = await homepageConfigAPI.getActive();
@@ -25,17 +42,30 @@ const HomepageConfigManager = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
 
   const handleSave = async () => {
     if (!config) return;
 
     try {
       setSaving(true);
-      // Prepare update data - exclude MongoDB internal fields
-      const { _id, createdAt, updatedAt, ...updateData } = config;
-      const response = await homepageConfigAPI.update(_id, updateData);
+      // Prepare update data - exclude MongoDB internal fields; the `undefined`
+      // values are dropped by JSON.stringify, so they never reach the backend.
+      const updateData: Partial<IHomepageConfig> = {
+        ...config,
+        _id: undefined,
+        createdAt: undefined,
+        updatedAt: undefined,
+      };
+      const response = await homepageConfigAPI.update(config._id, updateData);
       setConfig(response.data.data);
+      // Let every useHomepageConfig consumer (navbar logo, home sections, ...)
+      // refetch so the new branding/images show without a page refresh.
+      notifyHomepageConfigUpdated();
       showFromResponse(response);
       setActiveSection(null);
     } catch (error) {
@@ -74,7 +104,10 @@ const HomepageConfigManager = () => {
     setConfig({ ...config, order });
   };
 
-  const updateSection = (sectionId: 'hero' | 'about' | 'projects' | 'skills' | 'contact', data: any) => {
+  const updateSection = <K extends keyof HomepageSections>(
+    sectionId: K,
+    data: Partial<HomepageSections[K]>
+  ) => {
     if (!config) return;
     setConfig({
       ...config,
@@ -119,7 +152,9 @@ const HomepageConfigManager = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Homepage Configuration</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Homepage Configuration
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               Manage homepage sections, content, and display order
             </p>
@@ -137,7 +172,9 @@ const HomepageConfigManager = () => {
 
       {/* Section Order & Visibility */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Section Order & Visibility</h3>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+          Section Order & Visibility
+        </h3>
         <div className="space-y-3">
           {/* Branding Row */}
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -146,9 +183,7 @@ const HomepageConfigManager = () => {
                 {/* Icon aligned with order icons position */}
                 <FaPalette className="text-primary-600 dark:text-primary-400 w-4 h-4" />
               </div>
-              <span className="font-medium text-gray-900 dark:text-white">
-                Branding
-              </span>
+              <span className="font-medium text-gray-900 dark:text-white">Branding</span>
               <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                 <span>Logo: {config.branding?.logo ? '✓ Configured' : 'Not set'}</span>
                 <span>Favicon: {config.branding?.favicon ? '✓ Configured' : 'Not set'}</span>
@@ -194,7 +229,11 @@ const HomepageConfigManager = () => {
                     {sectionLabels[sectionId] || sectionId}
                   </span>
                   <button
-                    onClick={() => toggleSection(sectionId as 'hero' | 'about' | 'projects' | 'skills' | 'contact')}
+                    onClick={() =>
+                      toggleSection(
+                        sectionId as 'hero' | 'about' | 'projects' | 'skills' | 'contact'
+                      )
+                    }
                     className="flex items-center gap-2 text-sm"
                   >
                     {section.enabled ? (
@@ -226,9 +265,7 @@ const HomepageConfigManager = () => {
       {/* Section Editors */}
       {activeSection === 'branding' && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Edit Branding
-          </h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Edit Branding</h3>
           <BrandingEditor
             config={config.branding || {}}
             onChange={(data) => {
@@ -280,7 +317,13 @@ const HomepageConfigManager = () => {
 };
 
 // Section Editor Components
-const HeroEditor = ({ config, onChange }: { config: any; onChange: (data: any) => void }) => {
+const HeroEditor = ({
+  config,
+  onChange,
+}: {
+  config: Partial<HeroConfig>;
+  onChange: (data: Partial<HeroConfig>) => void;
+}) => {
   return (
     <div className="space-y-4">
       <div>
@@ -344,7 +387,7 @@ const HeroEditor = ({ config, onChange }: { config: any; onChange: (data: any) =
                 onChange({
                   ...config,
                   primaryButton: { ...config.primaryButton, text: e.target.value },
-                })
+                } as Partial<HeroConfig>)
               }
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="View Projects"
@@ -361,7 +404,7 @@ const HeroEditor = ({ config, onChange }: { config: any; onChange: (data: any) =
                 onChange({
                   ...config,
                   primaryButton: { ...config.primaryButton, href: e.target.value },
-                })
+                } as Partial<HeroConfig>)
               }
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="#projects"
@@ -381,7 +424,7 @@ const HeroEditor = ({ config, onChange }: { config: any; onChange: (data: any) =
                   ...config.primaryButton,
                   target: e.target.value as '_self' | '_blank',
                 },
-              })
+              } as Partial<HeroConfig>)
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
@@ -404,7 +447,7 @@ const HeroEditor = ({ config, onChange }: { config: any; onChange: (data: any) =
                 onChange({
                   ...config,
                   secondaryButton: { ...config.secondaryButton, text: e.target.value },
-                })
+                } as Partial<HeroConfig>)
               }
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Get In Touch"
@@ -421,7 +464,7 @@ const HeroEditor = ({ config, onChange }: { config: any; onChange: (data: any) =
                 onChange({
                   ...config,
                   secondaryButton: { ...config.secondaryButton, href: e.target.value },
-                })
+                } as Partial<HeroConfig>)
               }
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="#contact"
@@ -441,7 +484,7 @@ const HeroEditor = ({ config, onChange }: { config: any; onChange: (data: any) =
                   ...config.secondaryButton,
                   target: e.target.value as '_self' | '_blank',
                 },
-              })
+              } as Partial<HeroConfig>)
             }
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
@@ -511,7 +554,10 @@ const HeroEditor = ({ config, onChange }: { config: any; onChange: (data: any) =
           onChange={(e) => onChange({ ...config, showScrollIndicator: e.target.checked })}
           className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
         />
-        <label htmlFor="showScrollIndicator" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label
+          htmlFor="showScrollIndicator"
+          className="text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Show Scroll Indicator
         </label>
       </div>
@@ -519,14 +565,20 @@ const HeroEditor = ({ config, onChange }: { config: any; onChange: (data: any) =
   );
 };
 
-const AboutEditor = ({ config, onChange }: { config: any; onChange: (data: any) => void }) => {
+const AboutEditor = ({
+  config,
+  onChange,
+}: {
+  config: AboutConfig;
+  onChange: (data: Partial<AboutConfig>) => void;
+}) => {
   const [features, setFeatures] = useState(config.features || []);
 
   useEffect(() => {
     setFeatures(config.features || []);
   }, [config.features]);
 
-  const updateFeatures = (newFeatures: any[]) => {
+  const updateFeatures = (newFeatures: NonNullable<AboutConfig['features']>) => {
     setFeatures(newFeatures);
     onChange({ ...config, features: newFeatures });
   };
@@ -537,11 +589,11 @@ const AboutEditor = ({ config, onChange }: { config: any; onChange: (data: any) 
   };
 
   const removeFeature = (index: number) => {
-    updateFeatures(features.filter((_: any, i: number) => i !== index));
+    updateFeatures(features.filter((_, i) => i !== index));
   };
 
   const updateFeature = (index: number, field: string, value: string) => {
-    const updated = features.map((feature: any, i: number) =>
+    const updated = features.map((feature, i) =>
       i === index ? { ...feature, [field]: value } : feature
     );
     updateFeatures(updated);
@@ -658,7 +710,7 @@ const AboutEditor = ({ config, onChange }: { config: any; onChange: (data: any) 
           </p>
         ) : (
           <div className="space-y-4">
-            {features.map((feature: any, index: number) => (
+            {features.map((feature, index) => (
               <div
                 key={index}
                 className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
@@ -824,7 +876,13 @@ const AboutEditor = ({ config, onChange }: { config: any; onChange: (data: any) 
   );
 };
 
-const ProjectsEditor = ({ config, onChange }: { config: any; onChange: (data: any) => void }) => {
+const ProjectsEditor = ({
+  config,
+  onChange,
+}: {
+  config: ProjectsConfig;
+  onChange: (data: Partial<ProjectsConfig>) => void;
+}) => {
   return (
     <div className="space-y-4">
       <div>
@@ -867,7 +925,13 @@ const ProjectsEditor = ({ config, onChange }: { config: any; onChange: (data: an
   );
 };
 
-const SkillsEditor = ({ config, onChange }: { config: any; onChange: (data: any) => void }) => {
+const SkillsEditor = ({
+  config,
+  onChange,
+}: {
+  config: SkillsConfig;
+  onChange: (data: Partial<SkillsConfig>) => void;
+}) => {
   return (
     <div className="space-y-4">
       <div>
@@ -910,7 +974,13 @@ const SkillsEditor = ({ config, onChange }: { config: any; onChange: (data: any)
   );
 };
 
-const ContactEditor = ({ config, onChange }: { config: any; onChange: (data: any) => void }) => {
+const ContactEditor = ({
+  config,
+  onChange,
+}: {
+  config: ContactConfig;
+  onChange: (data: Partial<ContactConfig>) => void;
+}) => {
   return (
     <div className="space-y-4">
       <div>
@@ -980,7 +1050,10 @@ const ContactEditor = ({ config, onChange }: { config: any; onChange: (data: any
           onChange={(e) => onChange({ ...config, showLinkedInFollowers: e.target.checked })}
           className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
         />
-        <label htmlFor="showLinkedInFollowers" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label
+          htmlFor="showLinkedInFollowers"
+          className="text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           Show LinkedIn Followers Count
         </label>
       </div>
@@ -988,8 +1061,17 @@ const ContactEditor = ({ config, onChange }: { config: any; onChange: (data: any
   );
 };
 
-const BrandingEditor = ({ config, onChange }: { config: any; onChange: (data: any) => void }) => {
-  const [uploadingImage, setUploadingImage] = useState<{ logo: boolean; favicon: boolean }>({ logo: false, favicon: false });
+const BrandingEditor = ({
+  config,
+  onChange,
+}: {
+  config: BrandingConfig;
+  onChange: (data: BrandingConfig) => void;
+}) => {
+  const [uploadingImage, setUploadingImage] = useState<{ logo: boolean; favicon: boolean }>({
+    logo: false,
+    favicon: false,
+  });
 
   const handleImageUpload = async (type: 'logo' | 'favicon', file: File | null) => {
     if (!file) {
@@ -1043,12 +1125,19 @@ const BrandingEditor = ({ config, onChange }: { config: any; onChange: (data: an
           </div>
           {config.logo && (
             <div className="mt-3">
-              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</div>
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Preview:
+              </div>
               <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
                 <img
                   src={config.logo}
                   alt="Logo preview"
                   className="max-h-32 max-w-full object-contain"
+                  // onLoad resets the hide-on-error so a later successful
+                  // upload (new src) makes the preview visible again.
+                  onLoad={(e) => {
+                    e.currentTarget.style.display = '';
+                  }}
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
@@ -1101,12 +1190,19 @@ const BrandingEditor = ({ config, onChange }: { config: any; onChange: (data: an
           </div>
           {config.favicon && (
             <div className="mt-3">
-              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</div>
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Preview:
+              </div>
               <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
                 <img
                   src={config.favicon}
                   alt="Favicon preview"
                   className="h-16 w-16 object-contain"
+                  // onLoad resets the hide-on-error so a later successful
+                  // upload (new src) makes the preview visible again.
+                  onLoad={(e) => {
+                    e.currentTarget.style.display = '';
+                  }}
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
                   }}
